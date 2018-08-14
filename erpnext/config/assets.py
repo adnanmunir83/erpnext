@@ -50,28 +50,5 @@ def get_data():
 					"description": _("Transfer an asset from one warehouse to another")
 				},
 			]
-		},
-		{
-			"label": _("Reports"),
-			"icon": "fa fa-table",
-			"items": [
-				{
-					"type": "report",
-					"name": "Asset Depreciation Ledger",
-					"doctype": "Asset",
-					"is_query_report": True,
-				},
-				{
-					"type": "report",
-					"name": "Asset Depreciations and Balances",
-					"doctype": "Asset",
-					"is_query_report": True,
-				},
-				{
-					"type": "report",
-					"name": "Asset Maintenance",
-					"doctype": "Asset Maintenance"
-				},
-			]
 		}
 	]
