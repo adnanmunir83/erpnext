@@ -772,5 +772,5 @@ def make_purchase_invoice_of_sales_order(doc,method):
 
 				})
 			purchase_invoice.flags.ignore_permissions == True
-			purchase_invoice.insert()
+			purchase_invoice.insert(ignore_permissions = True)
 			frappe.msgprint("Purchase Invoice has been Created.")
