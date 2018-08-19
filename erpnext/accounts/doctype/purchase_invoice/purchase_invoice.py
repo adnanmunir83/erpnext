@@ -739,8 +739,9 @@ def make_stock_entry(source_name, target_doc=None):
 @frappe.whitelist()
 def make_purchase_invoice_of_sales_order(doc,method):
 	for row in doc.taxes:
+
 		if "22750 - Freight Payable" in row.account_head :
-			frappe.get_doc(
+			purchase_invoice=frappe.get_doc(
 				{
 					'doctype': 'Purchase Invoice',
 					"name": "P-SO-00008",
@@ -769,5 +770,7 @@ def make_purchase_invoice_of_sales_order(doc,method):
 						}
 					]
 
-				}).insert()
+				})
+			purchase_invoice.flags.ignore_permissions == True
+			purchase_invoice.insert()
 			frappe.msgprint("Purchase Invoice has been Created.")
