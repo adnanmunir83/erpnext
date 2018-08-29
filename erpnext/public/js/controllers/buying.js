@@ -26,7 +26,8 @@ erpnext.buying.BuyingController = erpnext.TransactionController.extend({
 			};
 		});
 
-		if (this.frm.doc.__islocal) {
+		if (this.frm.doc.__islocal
+			&& frappe.meta.has_field(this.frm.doc.doctype, "disable_rounded_total")) {
 			this.frm.set_value("disable_rounded_total", cint(frappe.sys_defaults.disable_rounded_total));
 		}
 
@@ -112,8 +113,8 @@ erpnext.buying.BuyingController = erpnext.TransactionController.extend({
 		var item = frappe.get_doc(cdt, cdn);
 		frappe.model.round_floats_in(item, ["price_list_rate", "discount_percentage"]);
 
-		item.rate = flt(item.price_list_rate * (1 - item.discount_percentage / 100.0),
-			precision("rate", item));
+		item.discount_amount = flt(item.price_list_rate) * flt(item.discount_percentage) / 100;
+		item.rate = flt((item.price_list_rate) - (item.discount_amount), precision('rate', item));
 
 		this.calculate_taxes_and_totals();
 	},
