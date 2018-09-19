@@ -6,6 +6,7 @@ frappe.provide("erpnext.taxes");
 frappe.provide("erpnext.taxes.flags");
 
 frappe.ui.form.on(cur_frm.doctype, {
+
 	setup: function(frm) {
 		// set conditional display for rate column in taxes
 		$(frm.wrapper).on('grid-row-render', function(e, grid_row) {
@@ -41,7 +42,31 @@ frappe.ui.form.on(cur_frm.doctype, {
 				}
 			});
 		}
+		if (frm.doc.docstatus == 0 && in_list(["Quotation", "Sales Order", "Sales Invoice", "Delivery Note", "Purchase Order", "Stock Entry", "Material Request"], frm.doctype)) {
+			var item_childtable = $("div[data-fieldname='items']")[1];
+			var grid_buttons = $(item_childtable).find(".grid-buttons");
+			if (!$(grid_buttons).find(".custom-add-multiple-rows").length) {
+				$(grid_buttons).append(`
+					<button type="reset" class="custom-add-multiple-rows btn btn-xs btn-default"
+							style="margin-right: 4px;">
+						Add Items
+					</button>
+				`)
+			}
+			$(grid_buttons).find(".custom-add-multiple-rows").click(function() {
+				console.log("clicked on the custom add button");
+				frm.events.custom_add_multiple_items(frm);
+			});
+		}
 	},
+
+	custom_add_multiple_items: function(frm) {
+		// frappe.custom_mutli_add_dialog(this.frm).show();
+		let multi_item_dialog = frappe.custom_mutli_add_dialog(frm);
+		multi_item_dialog.show();
+		multi_item_dialog.$wrapper.find('.modal-dialog').css("width", "960px");
+	},
+
 	validate: function(frm) {
 		// neither is absolutely mandatory
 		if(frm.get_docfield("taxes")) {
@@ -342,4 +367,297 @@ cur_frm.pformat.taxes= function(doc){
 		out += '</table></td></tr></table></div>';
 	}
 	return out;
+}
+
+
+frappe.provide("frappe")
+frappe.custom_mutli_add_dialog = function(frm) {
+	var dialog;
+
+	const custom_warehouse_template1 = `
+	<table class="table table-bordered table-hover table-condensed custom-item-selection-tool">
+		<thead>
+			<tr>
+				<th style="width: 120px" rowspan="2">Item Name</th>
+				<th style="width: 240px" rowspan="2">Details</th>
+				<th style="width: 220px" colspan="3">Present Qty</th>
+				<th style="width: 220px" colspan="3">Reserved Qty</th>
+				<th style="width: 90px" >Avail. Qty</th>
+			</tr>
+			<tr>
+				<th>SQM</th>
+				<th>Boxes</th>
+				<th>Pieces</th>
+				<th>SQM</th>
+				<th>Boxes</th>
+				<th>Pieces</th>
+				<th>SQM</th>
+			</tr>
+		</thead>
+		<tbody>
+	`;
+
+	const custom_warehouse_template2 = `
+		</tbody>
+	</table>
+	`;
+
+	const custom_warehousewise_template1 = `
+		<table class="table table-bordered table-hover table-condensed custom-warehouse-detail-tool">
+			<thead>
+				<tr>
+					<th style="width: 280px" rowspan="2">Warehouse Name</th>
+					<th style="width: 210px" colspan="3">Present Qty</th>
+					<th style="width: 210px" colspan="3">Reserved Qty</th>
+					<th style="width: 90px" >Avail. Qty</th>
+				</tr>
+				<tr>
+					<th>SQM</th>
+					<th>Boxes</th>
+					<th>Pieces</th>
+					<th>SQM</th>
+					<th>Boxes</th>
+					<th>Pieces</th>
+					<th>SQM</th>
+				</tr>
+			</thead>
+			<tbody>
+		`;
+
+
+	let fields = [
+			{
+				"label": __("Items Beginning with"),
+				"fieldname": "item_search",
+				"fieldtype": "Data"
+			},
+			{
+				"label": __("Search"),
+				"fieldname": "item_search_button",
+				"fieldtype": "Button"
+			},
+			{
+				"fieldname": "section_break",
+				"fieldtype": "Section Break"
+			},
+			{
+				"label": __("Item Name"),
+				"fieldname": "item_code",
+				"fieldtype": "Link",
+				"options": "Item",
+				"onchange": function() {
+					console.log("item set");
+					renderWarehousewiseItemDetails(frm);
+				},
+				"reqd": 1,
+				"read_only": 1
+			},
+			{
+				"fieldname": "column_break",
+				"fieldtype": "Column Break"
+			},
+			{
+				"label": __("Quantity (SQM)"),
+				"fieldname": "quantity",
+				"fieldtype": "Float",
+				"reqd": 1
+			},
+			{
+				"fieldname": "section_break",
+				"fieldtype": "Section Break"
+			},
+			{
+				"label": __("Item Detials"),
+				"fieldname": "item_html",
+				"fieldtype": "HTML"
+			}
+		]
+	dialog = new frappe.ui.Dialog({
+		title: __("Select Mutliple Items"),
+		fields: fields,
+		primary_action: function(values) {
+			custom_add_item(frm, values.item_code, values.quantity);
+			dialog.fields_dict.item_search_button.input.click();
+		},
+		primary_action_label: __("Add"),
+		width: 800
+	})
+
+	dialog.fields_dict.item_search_button.input.onclick = function(frm) {
+		get_item_details(via_search=true);
+	}
+
+	frappe.ui.keys.on("ctrl+f", function() {
+		dialog.fields_dict.item_search_button.input.click();
+	})
+
+	function get_item_details(via_search) {
+		// backend call to find the item details
+		let txt = dialog.get_field("item_search").get_value();
+		let item_code = '';
+		if (!via_search) {
+			item_code = dialog.get_field("item_code").get_value();
+		}
+		if (txt && txt != frappe.custom_item_details_string) {
+			frappe.call({
+				method: "erpnext.stock.custom_stock_scripts.get_item_details",
+				args: {
+					args: {
+						txt: txt,
+						item_code: item_code,
+						customer: frm.doc.customer,
+						update_stock: frm.doc.update_stock,
+						company: frm.doc.company,
+						order_type: frm.doc.order_type,
+						transaction_date: frm.doc.transaction_date,
+						doctype: frm.doc.doctype,
+						name: frm.doc.name
+					}
+				},
+				callback: function(r) {
+					frappe.custom_item_details = r.message;
+					frappe.custom_item_details_string = txt;
+					createItemDetailTemplate(frm);
+				}
+			});
+		} else if (true) {
+			createItemDetailTemplate(frm);
+		}
+
+	}
+
+	function createItemDetailTemplate(frm) {
+		let customItemDetailsTemplate = '';
+		let item_details = frappe.custom_item_details;
+		if (item_details) {
+			customItemDetailsTemplate += custom_warehouse_template1;
+			for (let item in item_details) {
+				let actual_qty_sqm = item_details[item]["item_stock_totals"]["actual_qty"];
+				let actual_qty_box = Math.floor( actual_qty_sqm / item_details[item]["uom_box"] );
+				let actual_qty_pieces = Math.round(actual_qty_sqm / (item_details[item]["uom_box"] / item_details[item]["uom_pieces"])) % item_details[item]["uom_pieces"];
+				let reserved_qty_sqm = item_details[item]["item_stock_totals"]["reserved_qty"];
+				let reserved_qty_box = Math.floor( reserved_qty_sqm / item_details[item]["uom_box"] );
+				let reserved_qty_pieces = Math.round(reserved_qty_sqm / (item_details[item]["uom_box"] / item_details[item]["uom_pieces"])) % item_details[item]["uom_pieces"];
+				customItemDetailsTemplate += `
+					<tr data-item=${item} class="custom-item-row">
+						<td>${item}</td>
+						<td>${item_details[item]["item_details"]}</td>
+						<td>${actual_qty_sqm}</td>
+						<td>${actual_qty_box || 0}</td>
+						<td>${actual_qty_pieces || 0}</td>
+						<td>${reserved_qty_sqm}</td>
+						<td>${reserved_qty_box || 0}</td>
+						<td>${reserved_qty_pieces || 0}</td>
+						<td><b>${actual_qty_sqm-reserved_qty_sqm}</b></td>
+					</tr>`;
+			}
+
+			customItemDetailsTemplate += custom_warehouse_template2;
+		} else {
+			customItemDetailsTemplate += `<div>No Item stock details found.</div>`
+		}
+		render_html_template(frm, customItemDetailsTemplate);
+	}
+
+	function renderWarehousewiseItemDetails(frm) {
+		let customWarehouseDetailsTemplate = '';
+		// let item_details = frappe.custom_item_details;
+		let item_code = dialog.get_field("item_code").get_value();
+		let warehouse_dict = frappe.custom_item_details[item_code]["warehouse_details"]
+		if (Object.keys(warehouse_dict).length) {
+			customWarehouseDetailsTemplate += custom_warehousewise_template1;
+			for (let warehouse in warehouse_dict) {
+				let actual_qty_sqm = warehouse_dict[warehouse]["actual_qty"];
+				let actual_qty_box = Math.floor( actual_qty_sqm / warehouse_dict[warehouse]["uom_box"] );
+				let actual_qty_pieces = Math.round(actual_qty_sqm / (warehouse_dict[warehouse]["uom_box"] / warehouse_dict[warehouse]["uom_pieces"])) % warehouse_dict[warehouse]["uom_pieces"];
+				let reserved_qty_sqm = warehouse_dict[warehouse]["reserved_qty"];
+				let reserved_qty_box = Math.floor( reserved_qty_sqm / warehouse_dict[warehouse]["uom_box"] );
+				let reserved_qty_pieces = Math.round(reserved_qty_sqm / (warehouse_dict[warehouse]["uom_box"] / warehouse_dict[warehouse]["uom_pieces"])) % warehouse_dict[warehouse]["uom_pieces"];
+				customWarehouseDetailsTemplate += `
+				<tr data-item=${warehouse} class="custom-item-row">
+					<td>${warehouse}</td>
+					<td>${actual_qty_sqm}</td>
+					<td>${actual_qty_box || 0}</td>
+					<td>${actual_qty_pieces || 0}</td>
+					<td>${reserved_qty_sqm}</td>
+					<td>${reserved_qty_box || 0}</td>
+					<td>${reserved_qty_pieces || 0}</td>
+					<td><b>${actual_qty_sqm-reserved_qty_sqm}</b></td>
+				</tr>
+				`;
+				// console.log(warehouse);
+			}
+			customWarehouseDetailsTemplate += custom_warehouse_template2;
+		} else {
+			customWarehouseDetailsTemplate += `<div>No Warehouse details found.</div>`
+		}
+		render_html_template(frm, customWarehouseDetailsTemplate, true);
+	}
+
+	function render_html_template(frm, htmlTemplate, warehouseWiseDetails=false) {
+		item_html_df = dialog.get_field("item_html");
+		$(item_html_df.wrapper).empty();
+		var warehouse_table = $(frappe.render_template(htmlTemplate));
+		warehouse_table.appendTo(item_html_df.wrapper);
+
+		if (!warehouseWiseDetails) {
+			$(".custom-item-row").click( function() {
+				let old_item_code = dialog.get_value("item_code");
+				let old_quantity = dialog.get_value("quantity");
+				let new_quantity = 1;
+				let itme_clicked = $(this).attr("data-item");
+				dialog.set_value("item_code", itme_clicked);
+				if (old_item_code===itme_clicked) {
+					new_quantity = old_quantity + 1;
+				}
+				dialog.set_value("quantity", new_quantity);
+			})
+		}
+	}
+
+
+	function custom_add_item(frm, item_code, item_qty) {
+		// add row or update qty
+		var added = false;
+
+		// find row with item if exists
+		$.each(frm.doc.items || [], (i, d) => {
+			if(d["item_code"]===item_code) {
+				frappe.model.set_value(d.doctype, d.name, 'qty', d.qty + item_qty);
+				frappe.show_alert({message: __("Added Item  {0} {1}", [item_code, item_qty]), indicator: 'green'});
+				added = true;
+				return false;
+			}
+		});
+
+		if(!added) {
+			var d = null;
+
+			var item_row = frappe.model.add_child(frm.doc, frm.doctype+" Item", "items");
+			item_row.item_code = item_code;
+			item_row.qty = item_qty;
+			if (frappe.custom_item_details[item_code]) {
+				item_row.def_boxes = frappe.custom_item_details[item_code]["uom_box"];
+				item_row.def_pieces = frappe.custom_item_details[item_code]["uom_pieces"];
+			}
+
+			frm.refresh_field("items");
+
+			frappe.run_serially([
+				() => frappe.model.set_value(item_row.doctype, item_row.name, "item_code", item_row.item_code),
+				() => frm.script_manager.trigger("item_code", item_row.doctype, item_row.name),
+				() => frappe.model.set_value(item_row.doctype, item_row.name, 'qty', item_qty),
+				() => frm.script_manager.trigger("qty", item_row.doctype, item_row.name),
+				() => frappe.timeout(0.1),
+				() => {
+					// debugger;
+					frm.refresh_field("items");
+					frappe.show_alert({message: __("Added Item - {0} with quantity - {1}", [item_code, item_qty]), indicator: 'green'});
+				}
+			]);
+		}
+	}
+
+	return dialog;
+
 }

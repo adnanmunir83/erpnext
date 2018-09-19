@@ -28,7 +28,54 @@ frappe.ui.form.on('Material Request', {
 				filters: {'company': doc.company}
 			}
 		}
+		frm.fields_dict["items"].grid.get_field("custom_warehouse_name").get_query = function(doc, cdt, cdn){
+			return{
+				filters: {'company': doc.company}
+			}
+		}
+
+		for (let warehouse_field of ["warehouse", "custom_warehouse_name"]) {
+			frm.set_query(warehouse_field, 'items', function(doc, cdt, cdn) {
+				var row  = locals[cdt][cdn];
+				var filters = erpnext.queries.warehouse(frm.doc);
+				if(row.item_code){
+					$.extend(filters, {"query":"erpnext.controllers.queries.warehouse_query"});
+					filters["filters"].push(["Bin", "item_code", "=", row.item_code]);
+				}
+				return filters
+			});
+		}
+
+	},
+
+	refresh: function(frm) {
+		if (frm.doc.docstatus == 1) {
+			frm.add_custom_button(__("Create Stock Entry"), function(frm) {
+				cur_frm.events.custom_make_stock_entry(cur_frm);
+
+			});
+		}
+	},
+
+	custom_make_stock_entry: function(frm) {
+		frappe.call({
+			type: "GET",
+			method: "erpnext.stock.doctype.material_request.material_request.custom_make_stock_entry",
+			args: {
+				"source_name": frm.doc.name
+			},
+			freeze: true,
+			callback: function(r) {
+				console.log(r);
+				if(!r.exc) {
+					// frappe.model.sync(r.message);
+					// frappe.set_route("Form", r.message.doctype, r.message.name);
+				}
+
+			}
+		})
 	}
+
 });
 
 frappe.ui.form.on("Material Request Item", {
