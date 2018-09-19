@@ -36,13 +36,13 @@ def get_data():
 			"items": [
 				{
 					"type": "doctype",
-					"name": "Job Opening",
-					"description": _("Opening for a Job."),
+					"name": "Job Applicant",
+					"description": _("Applicant for a Job."),
 				},
 				{
 					"type": "doctype",
-					"name": "Job Applicant",
-					"description": _("Applicant for a Job."),
+					"name": "Job Opening",
+					"description": _("Opening for a Job."),
 				},
 				{
 					"type": "doctype",
@@ -294,32 +294,6 @@ def get_data():
 					"doctype": "Vehicle"
 				},
 
-			]
-		},
-		{
-			"label": _("Help"),
-			"icon": "fa fa-facetime-video",
-			"items": [
-				{
-					"type": "help",
-					"label": _("Setting up Employees"),
-					"youtube_id": "USfIUdZlUhw"
-				},
-				{
-					"type": "help",
-					"label": _("Leave Management"),
-					"youtube_id": "fc0p_AXebc8"
-				},
-				{
-					"type": "help",
-					"label": _("Expense Claims"),
-					"youtube_id": "5SZHJF--ZFY"
-				},
-				{
-					"type": "help",
-					"label": _("Processing Payroll"),
-					"youtube_id": "apgE-f25Rm0"
-				},
 			]
 		}
 	]

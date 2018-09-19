@@ -734,3 +734,43 @@ def make_stock_entry(source_name, target_doc=None):
 	}, target_doc)
 
 	return doc
+
+
+@frappe.whitelist()
+def make_purchase_invoice_of_sales_order(doc,method):
+	for row in doc.taxes:
+
+		if "22750 - Freight Payable" in row.account_head :
+			purchase_invoice=frappe.get_doc(
+				{
+					'doctype': 'Purchase Invoice',
+					"name": "P-SO-00008",
+					"naming_series": "P-SO-",
+					"remarks": doc.name,
+					"docstatus": 1,
+					"discount_amount": 0,
+					"supplier": "LOADER BIKE",
+					"supplier_name": "LOADER BIKE",
+					"is_paid": 0,
+					"company": doc.company,
+					"set_posting_time": 0,
+					"is_return": 0,
+					"ignore_pricing_rule": 1,
+					"update_stock": 0,
+					"submit_on_creation": 1,
+					"items": [
+						{
+							"item_code": "99999",
+							"item_name": "FREIGHT CHARGES",
+							"qty": 1,
+							"rate": row.tax_amount,
+							"received_qty": 1,
+							"uom": "Nos",
+							"conversion_factor": 1
+						}
+					]
+
+				})
+			purchase_invoice.flags.ignore_permissions == True
+			purchase_invoice.insert(ignore_permissions = True)
+			frappe.msgprint("Purchase Invoice has been Created.")

@@ -153,20 +153,5 @@ def get_data():
 					"description": _("Setup SMS gateway settings")
 				}
 			]
-		},
-		{
-			"label": _("Help"),
-			"items": [
-				{
-					"type": "help",
-					"label": _("Lead to Quotation"),
-					"youtube_id": "TxYX4r4JAKA"
-				},
-				{
-					"type": "help",
-					"label": _("Newsletters"),
-					"youtube_id": "muLKsCrrDRo"
-				},
-			]
-		},
+		}
 	]
