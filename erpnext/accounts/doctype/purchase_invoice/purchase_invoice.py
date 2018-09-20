@@ -747,6 +747,7 @@ def make_purchase_invoice_of_sales_order(doc,method):
 					"name": "P-SO-00008",
 					"naming_series": "P-SO-",
 					"remarks": doc.name,
+					"cust_sales_order": doc.name,
 					"docstatus": 1,
 					"discount_amount": 0,
 					"supplier": "LOADER BIKE",
