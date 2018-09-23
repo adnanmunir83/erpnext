@@ -31,6 +31,12 @@ frappe.ui.form.on("Sales Order", {
 				}
 			}
 		});
+		
+		frm.get_field("cost_center").get_query = function(doc, cdt, cdn){
+			return{
+				filters: {'company': doc.company}
+			}
+		}
 
 		erpnext.queries.setup_warehouse_query(frm);
 	},
