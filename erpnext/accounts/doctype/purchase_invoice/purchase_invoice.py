@@ -764,6 +764,7 @@ def make_purchase_invoice_of_sales_order(doc,method):
 							"item_code": "99999",
 							"item_name": "FREIGHT CHARGES",
 							"qty": 1,
+							"cost_center": doc.cost_center,
 							"rate": row.tax_amount,
 							"received_qty": 1,
 							"uom": "Nos",
