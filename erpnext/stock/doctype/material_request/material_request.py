@@ -462,6 +462,7 @@ def custom_make_stock_entry(source_name):
 			doc = get_mapped_doc("Material Request", source_name, {
 				"Material Request": {
 					"doctype": "Stock Entry",
+					"from_warehouse":warehouse,
 					"validation": {
 						"docstatus": ["=", 1],
 						"material_request_type": ["in", ["Material Transfer", "Material Issue"]]
