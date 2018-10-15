@@ -53,7 +53,7 @@ frappe.ui.form.on(cur_frm.doctype, {
 					</button>
 				`)
 			}
-			$(grid_buttons).find(".custom-add-multiple-rows").click(function() {
+			$(grid_buttons).find(".custom-add-multiple-rows").off().click(function() {
 				console.log("clicked on the custom add button");
 				frm.events.custom_add_multiple_items(frm);
 			});
@@ -375,14 +375,15 @@ frappe.custom_mutli_add_dialog = function(frm) {
 	var dialog;
 
 	const custom_warehouse_template1 = `
+	<div style="display:block; max-height:320px; overflow-y:auto;">
 	<table class="table table-bordered table-hover table-condensed custom-item-selection-tool">
 		<thead>
 			<tr>
-				<th style="width: 120px" rowspan="2">Item Name</th>
-				<th style="width: 240px" rowspan="2">Details</th>
-				<th style="width: 220px" colspan="3">Present Qty</th>
-				<th style="width: 220px" colspan="3">Reserved Qty</th>
-				<th style="width: 90px" >Avail. Qty</th>
+				<th style="width: 90px" rowspan="2">Item Name</th>
+				<th style="width: 360px" rowspan="2">Details</th>
+				<th style="width: 180px" colspan="3">Present Qty</th>
+				<th style="width: 180px" colspan="3">Reserved Qty</th>
+				<th style="width: 80px" >Avail. Qty</th>
 			</tr>
 			<tr>
 				<th>SQM</th>
@@ -400,6 +401,7 @@ frappe.custom_mutli_add_dialog = function(frm) {
 	const custom_warehouse_template2 = `
 		</tbody>
 	</table>
+	</div>
 	`;
 
 	const custom_warehousewise_template1 = `
@@ -530,8 +532,19 @@ frappe.custom_mutli_add_dialog = function(frm) {
 		let customItemDetailsTemplate = '';
 		let item_details = frappe.custom_item_details;
 		if (item_details) {
+
+			// create the sorted dict
+			let sortedItems = Object.keys(item_details).map(function(key) {
+				let data = item_details[key]['item_stock_totals'];
+				return [key, data['actual_qty']-data['reserved_qty']];
+			});
+			sortedItems.sort(function(first, second) {
+				return second[1] - first[1];
+			});
+
 			customItemDetailsTemplate += custom_warehouse_template1;
-			for (let item in item_details) {
+			for (let item of sortedItems) {
+				item = item[0];
 				let actual_qty_sqm = item_details[item]["item_stock_totals"]["actual_qty"];
 				let actual_qty_box = Math.floor( actual_qty_sqm / item_details[item]["uom_box"] );
 				let actual_qty_pieces = Math.round(actual_qty_sqm / (item_details[item]["uom_box"] / item_details[item]["uom_pieces"])) % item_details[item]["uom_pieces"];
@@ -570,7 +583,7 @@ frappe.custom_mutli_add_dialog = function(frm) {
 				let actual_qty_sqm = warehouse_dict[warehouse]["actual_qty"];
 				let reserved_qty_sqm = warehouse_dict[warehouse]["reserved_qty"];
 
-				if (actual_qty_sqm != 0 && reserved_qty_sqm !=0) {
+				if (actual_qty_sqm != 0 || reserved_qty_sqm !=0) {
 					let actual_qty_box = Math.floor( actual_qty_sqm / warehouse_dict[warehouse]["uom_box"] );
 					let actual_qty_pieces = Math.round(actual_qty_sqm / (warehouse_dict[warehouse]["uom_box"] / warehouse_dict[warehouse]["uom_pieces"])) % warehouse_dict[warehouse]["uom_pieces"];
 					let reserved_qty_box = Math.floor( reserved_qty_sqm / warehouse_dict[warehouse]["uom_box"] );
