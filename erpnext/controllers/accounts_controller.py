@@ -572,7 +572,6 @@ class AccountsController(TransactionBase):
 					currency=advance.account_currency)
 			else:
 				order_total = self.base_rounded_total or self.base_grand_total
-
 				formatted_order_total = fmt_money(order_total, precision=self.precision("base_grand_total"),
 					currency=advance.account_currency)
 
