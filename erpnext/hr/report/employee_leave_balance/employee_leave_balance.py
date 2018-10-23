@@ -41,8 +41,7 @@ def get_data(filters, leave_types):
 	
 	data = []
 	for employee in active_employees:
-		leave_approvers = [l.leave_approver for l in frappe.db.sql("""select leave_approver from `tabEmployee Leave Approver` where parent = %s""",
-							(employee.name),as_dict=True)]
+		leave_approvers = get_approvers(employee.department)
 		if (len(leave_approvers) and user in leave_approvers) or (user in ["Administrator", employee.user_id]) or ("HR Manager" in frappe.get_roles(user)):
 			row = [employee.name, employee.employee_name, employee.department]
 
@@ -59,8 +58,34 @@ def get_data(filters, leave_types):
 				closing = get_leave_balance_on(employee.name, leave_type, filters.to_date,
 					allocation_records_based_on_to_date.get(employee.name, frappe._dict()))
 
+<<<<<<< HEAD
 				row += [opening, leaves_taken, closing]
 			
 			data.append(row)
 		
 	return data
+=======
+				row += [leaves_taken, closing]
+
+			data.append(row)
+		
+	return data
+
+def get_approvers(department):
+	if not department:
+		return []
+
+	approvers = []
+	# get current department and all its child
+	department_details = frappe.db.get_value("Department", {"name": department}, ["lft", "rgt"], as_dict=True)
+	department_list = frappe.db.sql("""select name from `tabDepartment`
+		where lft >= %s and rgt <= %s order by lft desc
+		""", (department_details.lft, department_details.rgt), as_list = True)
+
+	# retrieve approvers list from current department and from its subsequent child departments
+	for d in department_list:
+		approvers.extend([l.leave_approver for l in frappe.db.sql("""select approver from `tabDepartment Approver` \
+			where parent = %s and parentfield = 'leave_approver'""", (d), as_dict=True)])
+
+	return approvers
+>>>>>>> tb

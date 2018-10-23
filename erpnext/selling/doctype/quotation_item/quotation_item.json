@@ -1250,7 +1250,7 @@
    "no_copy": 0, 
    "permlevel": 0, 
    "precision": "", 
-   "print_hide": 0, 
+   "print_hide": 1, 
    "print_hide_if_no_value": 0, 
    "read_only": 1, 
    "remember_last_selected_value": 0, 
@@ -1280,7 +1280,7 @@
    "no_copy": 0, 
    "permlevel": 0, 
    "precision": "", 
-   "print_hide": 0, 
+   "print_hide": 1, 
    "print_hide_if_no_value": 0, 
    "read_only": 1, 
    "remember_last_selected_value": 0, 
@@ -1798,7 +1798,11 @@
  "istable": 1, 
  "max_attachments": 0, 
  "menu_index": 0, 
+<<<<<<< HEAD
  "modified": "2018-08-06 05:18:38.135668", 
+=======
+ "modified": "2018-01-10 08:32:51.972304", 
+>>>>>>> tb
  "modified_by": "Administrator", 
  "module": "Selling", 
  "name": "Quotation Item", 

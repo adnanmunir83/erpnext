@@ -2,8 +2,12 @@
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
+<<<<<<< HEAD
 import frappe
 from frappe.utils import flt
+=======
+import frappe, erpnext
+>>>>>>> tb
 from frappe import _
 
 def execute(filters=None):
@@ -11,6 +15,7 @@ def execute(filters=None):
 	return columns, data
 
 def get_data(filters):
+<<<<<<< HEAD
 	data = []
 	depreciation_accounts = frappe.db.sql_list(""" select name from tabAccount
 		where ifnull(account_type, '') = 'Depreciation' """)
@@ -21,10 +26,39 @@ def get_data(filters):
 		["against_voucher_type", "=", "Asset"],
 		["account", "in", depreciation_accounts]]
 
+=======
+	data = frappe.db.sql("""
+		select 
+			a.name as asset, a.asset_category, a.status, 
+			ds.depreciation_method, a.purchase_date, a.gross_purchase_amount,
+			ds.schedule_date as depreciation_date, ds.depreciation_amount, 
+			ds.accumulated_depreciation_amount, 
+			(a.gross_purchase_amount - ds.accumulated_depreciation_amount) as amount_after_depreciation,
+			ds.journal_entry as depreciation_entry
+		from
+			`tabAsset` a, `tabDepreciation Schedule` ds
+		where
+			a.name = ds.parent
+			and a.docstatus=1
+			and ifnull(ds.journal_entry, '') != ''
+			and ds.schedule_date between %(from_date)s and %(to_date)s
+			and a.company = %(company)s
+			{conditions}
+		order by
+			a.name asc, ds.schedule_date asc
+	""".format(conditions=get_filter_conditions(filters)), filters, as_dict=1)
+
+	return data
+
+def get_filter_conditions(filters):
+	conditions = ""
+	
+>>>>>>> tb
 	if filters.get("asset"):
 		filters_data.append(["against_voucher", "=", filters.get("asset")])
 
 	if filters.get("asset_category"):
+<<<<<<< HEAD
 		assets = frappe.db.sql_list("""select name from tabAsset
 			where asset_category = %s and docstatus=1""", filters.get("asset_category"))
 
@@ -40,6 +74,19 @@ def get_data(filters):
 
 	assets = [d.against_voucher for d in gl_entries]
 	assets_details = get_assets_details(assets)
+=======
+		conditions += " and a.asset_category = %(asset_category)s"
+		
+	company_finance_book = erpnext.get_default_finance_book(filters.get("company"))
+
+	if (not filters.get('finance_book') or (filters.get('finance_book') == company_finance_book)):
+		filters['finance_book'] = company_finance_book
+		conditions += " and ifnull(ds.finance_book, '') in (%(finance_book)s, '') "
+	elif filters.get("finance_book"):
+		conditions += " and ifnull(ds.finance_book, '') = %(finance_book)s"
+
+	return conditions
+>>>>>>> tb
 	
 	for d in gl_entries:
 		asset_data = assets_details.get(d.against_voucher)

@@ -4,6 +4,9 @@ import random, json
 import frappe
 from frappe.utils import nowdate, add_days
 from erpnext.demo.setup.setup_data import import_json
+from erpnext.demo.domains import data
+
+from six import iteritems
 
 def setup_data():
 	import_json("Asset Category")
@@ -63,10 +66,11 @@ def setup_item():
 	for i in items:
 		item = frappe.new_doc('Item')
 		item.update(i)
-		if item.default_warehouse:
-			warehouse = frappe.get_all('Warehouse', filters={'warehouse_name': item.default_warehouse}, limit=1)
+		if item.item_defaults[0].default_warehouse:
+			item.item_defaults[0].company = data.get("Manufacturing").get('company_name')
+			warehouse = frappe.get_all('Warehouse', filters={'warehouse_name': item.item_defaults[0].default_warehouse}, limit=1)
 			if warehouse:
-				item.default_warehouse = warehouse[0].name
+				item.item_defaults[0].default_warehouse = warehouse[0].name
 		item.insert()
 
 def setup_product_bundle():
@@ -122,7 +126,7 @@ def setup_item_price():
 	}
 
 	for price_list in ("standard_buying", "standard_selling"):
-		for item, rate in locals().get(price_list).iteritems():
+		for item, rate in iteritems(locals().get(price_list)):
 			frappe.get_doc({
 				"doctype": "Item Price",
 				"price_list": price_list.replace("_", " ").title(),

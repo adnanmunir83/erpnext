@@ -221,6 +221,7 @@ def update_account_number(name, account_name, account_number=None):
 		frappe.rename_doc("Account", name, new_name, ignore_permissions=1)
 		return new_name
 
+<<<<<<< HEAD
 @frappe.whitelist()
 def merge_account(old, new, is_group, root_type, company):
 	# Validate properties before merging
@@ -240,3 +241,13 @@ def merge_account(old, new, is_group, root_type, company):
 	frappe.rename_doc("Account", old, new, merge=1, ignore_permissions=1)
 
 	return new
+=======
+def get_name_with_number(new_account, account_number):
+	if account_number and not new_account[0].isdigit():
+		new_account = account_number + " - " + new_account
+	return new_account
+
+
+def on_doctype_update():
+	frappe.db.add_index("Account", ["lft", "rgt"])
+>>>>>>> tb
