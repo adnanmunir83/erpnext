@@ -142,8 +142,8 @@ class SalesInvoice(SellingController):
 
 		self.update_time_sheet(self.name)
 
-		update_company_current_month_sales(self.company)
-		self.update_project()
+	#	update_company_current_month_sales(self.company)
+	#	self.update_project()
 
 	def validate_pos_paid_amount(self):
 		if len(self.payments) == 0 and self.is_pos:
@@ -181,8 +181,8 @@ class SalesInvoice(SellingController):
 		self.make_gl_entries_on_cancel()
 		frappe.db.set(self, 'status', 'Cancelled')
 
-		update_company_current_month_sales(self.company)
-		self.update_project()
+	#	update_company_current_month_sales(self.company)
+	#	self.update_project()
 
 	def update_status_updater_args(self):
 		if cint(self.update_stock):

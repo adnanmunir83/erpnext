@@ -15,7 +15,7 @@ frappe.query_reports["General Ledger"] = {
 			"fieldname":"from_date",
 			"label": __("From Date"),
 			"fieldtype": "Date",
-			"default": frappe.datetime.add_months(frappe.datetime.get_today(), -1),
+			"default": frappe.datetime.get_today(),
 			"reqd": 1,
 			"width": "60px"
 		},
@@ -32,6 +32,7 @@ frappe.query_reports["General Ledger"] = {
 			"label": __("Account"),
 			"fieldtype": "Link",
 			"options": "Account",
+			"reqd": 1,
 			"get_query": function() {
 				var company = frappe.query_report_filters_by_name.company.get_value();
 				return {

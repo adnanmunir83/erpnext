@@ -36,13 +36,13 @@ frappe.require("assets/erpnext/js/financial_statements.js", function() {
 				"fieldname": "from_date",
 				"label": __("From Date"),
 				"fieldtype": "Date",
-				"default": frappe.defaults.get_user_default("year_start_date"),
+				"default": frappe.datetime.get_today(),
 			},
 			{
 				"fieldname": "to_date",
 				"label": __("To Date"),
 				"fieldtype": "Date",
-				"default": frappe.defaults.get_user_default("year_end_date"),
+				"default": frappe.datetime.get_today(),
 			},
 			{
 				"fieldname": "with_period_closing_entry",

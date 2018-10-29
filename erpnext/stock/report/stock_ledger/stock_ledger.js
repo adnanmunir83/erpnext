@@ -15,7 +15,7 @@ frappe.query_reports["Stock Ledger"] = {
 			"fieldname":"from_date",
 			"label": __("From Date"),
 			"fieldtype": "Date",
-			"default": frappe.datetime.add_months(frappe.datetime.get_today(), -1),
+			"default": frappe.datetime.get_today(),
 			"reqd": 1
 		},
 		{
@@ -29,7 +29,8 @@ frappe.query_reports["Stock Ledger"] = {
 			"fieldname":"warehouse",
 			"label": __("Warehouse"),
 			"fieldtype": "Link",
-			"options": "Warehouse"
+			"options": "Warehouse",
+			"reqd": 1
 		},
 		{
 			"fieldname":"item_code",
