@@ -89,6 +89,7 @@ class MaterialRequest(BuyingController):
 
 	def on_submit(self):
 		# frappe.db.set(self, 'status', 'Submitted')
+		self.validate_sales_order_qty()
 		self.update_requested_qty()
 
 	def before_save(self):
@@ -192,6 +193,23 @@ class MaterialRequest(BuyingController):
 			update_bin_qty(item_code, warehouse, {
 				"indented_qty": get_indented_qty(item_code, warehouse)
 			})
+
+	def validate_sales_order_qty(self):
+		if self.material_request_type == "Purchase":
+			return
+
+		req_qty=0
+
+		if self.material_request_type in ("Material Transfer"):
+			for d in self.get("items"):
+				req_qty =  flt(frappe.db.sql("""select (select qty from `tabSales Order Item` where name= %s )- ifnull(sum(qty),0) from `tabMaterial Request Item`
+					where docstatus=1 and item_code= %s and parent != %s
+					and sales_order = %s """,
+					(d.sales_order_item,d.item_code,self.name, d.sales_order))[0][0])
+
+				if req_qty and (req_qty - d.qty) < 0:
+					frappe.throw(_("The total Requested quantity {0}   \
+						cannot be greater than Sales Order quantity for Item {1}").format( d.qty, d.item_code))
 
 def update_completed_and_requested_qty(stock_entry, method):
 	if stock_entry.doctype == "Stock Entry":
@@ -456,6 +474,7 @@ def custom_make_stock_entry(source_name):
 			def set_missing_values(source, target):
 				target.purpose = source.material_request_type
 				target.from_warehouse = warehouse
+				target.naming_series = get_naming_series(mr_doc.company)
 				target.run_method("calculate_rate_and_amount")
 
 			target_doc = None
@@ -489,3 +508,14 @@ def custom_make_stock_entry(source_name):
 
 	frappe.msgprint(_("Stock Entries ({0}) created".format(", ".join(doc_list))))
 	return doc_list
+
+def get_naming_series(companyseries):
+	series = ""
+	if companyseries == "TILE SELECT":
+		series = "TS-STE-"
+	elif companyseries == "TILE BAZAR":
+		series = "TB-STE-"
+	elif companyseries == "KALE FAISALABAD":
+		series = "KF-STE-"
+
+	return series
