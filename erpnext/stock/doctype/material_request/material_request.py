@@ -194,21 +194,23 @@ class MaterialRequest(BuyingController):
 				"indented_qty": get_indented_qty(item_code, warehouse)
 			})
 
-	def validate_sales_order_qty(self):
-		if self.material_request_type == "Purchase":
-			return
+	def validate_sales_order_qty(self) :
+         if self.material_request_type == "Purchase":
+            return
 
-        if self.material_request_type in ("Material Transfer"):
-             for d in self.get("items"):
-                 req_qty = flt(frappe.db.sql("""select ifnull(sum(qty),0) from `tabMaterial Request Item`
-		             where docstatus=1 and item_code= %s and parent != %s
-		            and sales_order = %s """,(d.item_code, self.name, d.sales_order))[0][0])
-                 sales_order_qty = flt(frappe.db.sql("select qty from `tabSales Order Item` where name= %s ",
+            if self.material_request_type in ("Material Transfer"):
+                 for d in self.get("items"):
+                    req_qty = flt(frappe.db.sql("""select ifnull(sum(qty),0) from `tabMaterial Request Item`
+		                 where docstatus=1 and item_code= %s and parent != %s
+		                and sales_order = %s """,(d.item_code, self.name, d.sales_order))[0][0])
+
+                    sales_order_qty = flt(frappe.db.sql("select qty from `tabSales Order Item` where name= %s ",
                                                 (d.sales_order_item))[0][0])
-                if (req_qty + d.qty) - sales_order_qty > 0:
-                    frappe.throw(_("The total Requested quantity {0}   \
-		            cannot be greater than Sales Order quantity {1} , for Item {2}").format(d.qty, sales_order_qty,
-                                                                                            d.item_code))
+
+                    if (req_qty + d.qty) - sales_order_qty > 0:
+                        frappe.throw(_("The total Requested quantity {0}   \
+		                cannot be greater than Sales Order quantity {1} , for Item {2}")
+                        .format(d.qty, sales_order_qty, d.item_code))
 
 
 def update_completed_and_requested_qty(stock_entry, method):
