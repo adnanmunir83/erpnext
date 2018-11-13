@@ -13,6 +13,10 @@ erpnext.accounts.SalesInvoiceController = erpnext.selling.SellingController.exte
 	setup: function(doc) {
 		this.setup_posting_date_time_check();
 		this._super(doc);
+		this.frm.set_indicator_formatter('item_code',
+		function(doc) {
+				return (doc.docstatus==1 || doc.qty <= doc.actual_qty) ? "green" : "orange"
+			})
 	},
 	onload: function() {
 		var me = this;
