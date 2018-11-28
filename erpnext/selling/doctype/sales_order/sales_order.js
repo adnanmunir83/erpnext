@@ -56,9 +56,9 @@ frappe.ui.form.on("Sales Order", {
 		refresh_field("items");
 	},
 
-	onload_post_render: function(frm) {
-		frm.get_field("items").grid.set_multiple_add("item_code", "qty");
-	}
+	//onload_post_render: function(frm) {
+	//	frm.get_field("items").grid.set_multiple_add("item_code", "qty");
+	//}
 });
 
 frappe.ui.form.on("Sales Order Item", {
