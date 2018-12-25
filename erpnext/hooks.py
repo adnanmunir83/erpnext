@@ -185,8 +185,8 @@ doc_events = {
 		"on_submit": "erpnext.stock.doctype.material_request.material_request.update_completed_and_requested_qty",
 		"on_cancel": "erpnext.stock.doctype.material_request.material_request.update_completed_and_requested_qty"
 	},
-	"Sales Order": {
-		"on_submit": "erpnext.accounts.doctype.purchase_invoice.purchase_invoice.make_purchase_invoice_of_sales_order"
+	"Sales Invoice": {
+		"on_submit": "erpnext.accounts.doctype.purchase_invoice.purchase_invoice.make_purchase_invoice_of_sales_invoice"
 		# "on_cancel": "erpnext.stock.doctype.material_request.material_request.update_completed_and_requested_qty"
 	},
 	"User": {

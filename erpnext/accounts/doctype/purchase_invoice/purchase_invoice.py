@@ -771,16 +771,19 @@ def make_stock_entry(source_name, target_doc=None):
 
 
 @frappe.whitelist()
-def make_purchase_invoice_of_sales_order(doc,method):
+def make_purchase_invoice_of_sales_invoice(doc,method):
+	sales_order_no = ""
+	for d in doc.items:
+		if d.sales_order:
+			sales_order_no = d.sales_order
 	for row in doc.taxes:
-
 		if "22750 - Freight Payable" in row.account_head and row.tax_amount>0:
 			purchase_invoice=frappe.get_doc(
 				{
 					'doctype': 'Purchase Invoice',
-					"naming_series": "P-SO-",
+					"naming_series": "PLC-",
 					"remarks": doc.name,
-					"cust_sales_order": doc.name,
+					"cust_sales_order": sales_order_no,
 					"docstatus": 1,
 					"discount_amount": 0,
 					"supplier": "LOADER BIKE",
@@ -797,7 +800,7 @@ def make_purchase_invoice_of_sales_order(doc,method):
 							"item_code": "99999",
 							"item_name": "FREIGHT CHARGES",
 							"qty": 1,
-							"cost_center": doc.cost_center,
+							"cost_center": row.cost_center,
 							"rate": row.tax_amount,
 							"received_qty": 1,
 							"uom": "Nos",
@@ -806,7 +809,6 @@ def make_purchase_invoice_of_sales_order(doc,method):
 					]
 
 				})
-			purchase_invoice.flags.ignore_permissions == True
 			purchase_invoice.insert(ignore_permissions = True)
 			frappe.msgprint("Purchase Invoice has been Created.")
 
@@ -816,7 +818,7 @@ def make_purchase_invoice_of_sales_order(doc,method):
 					'doctype': 'Purchase Invoice',
 					"naming_series": "P-SO-",
 					"remarks": doc.name,
-					"cust_sales_order": doc.name,
+					"cust_sales_order": sales_order_no,
 					"docstatus": 1,
 					"discount_amount": 0,
 					"supplier": "Cutting / Fitting",
@@ -833,7 +835,7 @@ def make_purchase_invoice_of_sales_order(doc,method):
 							"item_code": "99998",
 							"item_name": "Cutting / Fitting Charges",
 							"qty": 1,
-							"cost_center": doc.cost_center,
+							"cost_center": row.cost_center,
 							"rate": row.tax_amount,
 							"received_qty": 1,
 							"uom": "Nos",
@@ -842,6 +844,5 @@ def make_purchase_invoice_of_sales_order(doc,method):
 					]
 
 				})
-			purchase_invoice.flags.ignore_permissions == True
 			purchase_invoice.insert(ignore_permissions = True)
 			frappe.msgprint("Purchase Invoice has been Created.")
