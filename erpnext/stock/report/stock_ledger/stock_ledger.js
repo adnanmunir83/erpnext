@@ -15,7 +15,7 @@ frappe.query_reports["Stock Ledger"] = {
 			"fieldname":"from_date",
 			"label": __("From Date"),
 			"fieldtype": "Date",
-			"default": frappe.datetime.add_months(frappe.datetime.get_today(), -1),
+			"default": frappe.datetime.add_days(frappe.datetime.nowdate(), -1),
 			"reqd": 1
 		},
 		{
@@ -35,12 +35,7 @@ frappe.query_reports["Stock Ledger"] = {
 			"fieldname":"item_code",
 			"label": __("Item"),
 			"fieldtype": "Link",
-			"options": "Item",
-			"get_query": function() {
-				return {
-					query: "erpnext.controllers.queries.item_query"
-				}
-			}
+			"options": "Item"
 		},
 		{
 			"fieldname":"item_group",
@@ -64,12 +59,6 @@ frappe.query_reports["Stock Ledger"] = {
 			"fieldname":"voucher_no",
 			"label": __("Voucher #"),
 			"fieldtype": "Data"
-		},
-		{
-			"fieldname":"project",
-			"label": __("Project"),
-			"fieldtype": "Link",
-			"options": "Project"
 		}
 	]
 }

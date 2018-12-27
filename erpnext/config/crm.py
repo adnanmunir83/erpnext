@@ -126,11 +126,6 @@ def get_data():
 					"link": "Tree/Sales Person",
 					"description": _("Manage Sales Person Tree."),
 				},
-				{
-					"type": "doctype",
-					"name": "Lead Source",
-					"description": _("Track Leads by Lead Source.")
-				},
 			]
 		},
 		{
@@ -153,20 +148,5 @@ def get_data():
 					"description": _("Setup SMS gateway settings")
 				}
 			]
-		},
-		{
-			"label": _("Help"),
-			"items": [
-				{
-					"type": "help",
-					"label": _("Lead to Quotation"),
-					"youtube_id": "TxYX4r4JAKA"
-				},
-				{
-					"type": "help",
-					"label": _("Newsletters"),
-					"youtube_id": "muLKsCrrDRo"
-				},
-			]
-		},
+		}
 	]

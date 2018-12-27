@@ -2,6 +2,7 @@
 // License: GNU General Public License v3. See license.txt
 
 frappe.require("assets/erpnext/js/financial_statements.js", function() {
+	var d = new Date();
 	frappe.query_reports["Trial Balance"] = {
 		"filters": [
 			{
@@ -35,8 +36,8 @@ frappe.require("assets/erpnext/js/financial_statements.js", function() {
 			{
 				"fieldname": "from_date",
 				"label": __("From Date"),
-				"fieldtype": "Date",
-				"default": frappe.defaults.get_user_default("year_start_date"),
+				"fieldtype": "Date",				
+				"default": new Date(d.getFullYear(),d.getMonth(),1)
 			},
 			{
 				"fieldname": "to_date",

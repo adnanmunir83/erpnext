@@ -157,16 +157,7 @@ def get_data():
 			"icon": "octicon octicon-issue-opened",
 			"type": "module",
 			"hidden": 1
-		},
-		{
-			"module_name": "Learn",
-			"color": "#FF888B",
-			"icon": "octicon octicon-device-camera-video",
-			"type": "module",
-			"is_help": True,
-			"label": _("Learn"),
-			"hidden": 1
-		},
+		},		
 		{
 			"module_name": "Maintenance",
 			"color": "#FF888B",
@@ -200,7 +191,7 @@ def get_data():
 			"color": "#fd784f",
 			"icon": "octicon octicon-calendar",
 			"label": _("Course Schedule"),
-			"link": "List/Course Schedule/Calendar",
+			"link": "Calendar/Course Schedule",
 			"_doctype": "Course Schedule",
 			"type": "list",
 			"hidden": 1

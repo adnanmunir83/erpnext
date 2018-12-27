@@ -1,7 +1,8 @@
 // Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors and contributors
 // For license information, please see license.txt
-
+var d = new Date();
 frappe.query_reports["Stock Balance"] = {
+	
 	"filters": [
 		{
 			"fieldname":"from_date",
@@ -9,7 +10,8 @@ frappe.query_reports["Stock Balance"] = {
 			"fieldtype": "Date",
 			"width": "80",
 			"reqd": 1,
-			"default": frappe.datetime.add_months(frappe.datetime.get_today(), -1),
+			
+			"default": new Date(d.getFullYear(),d.getMonth(),1)
 		},
 		{
 			"fieldname":"to_date",
@@ -31,12 +33,7 @@ frappe.query_reports["Stock Balance"] = {
 			"label": __("Item"),
 			"fieldtype": "Link",
 			"width": "80",
-			"options": "Item",
-			"get_query": function() {
-				return {
-					query: "erpnext.controllers.queries.item_query"
-				}
-			}
+			"options": "Item"
 		},
 		{
 			"fieldname": "warehouse",
