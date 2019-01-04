@@ -22,17 +22,26 @@ def execute(filters=None):
 
 	iwb_map = get_item_warehouse_map(filters, sle)
 	item_map = get_item_details(items, sle, filters)
-	item_reorder_detail_map = get_item_reorder_details(item_map.keys())
+#	item_reorder_detail_map = get_item_reorder_details(item_map.keys())
 
 	data = []
 	for (company, item, warehouse) in sorted(iwb_map):
 		if item_map.get(item):
 			qty_dict = iwb_map[(company, item, warehouse)]
-			item_reorder_level = 0
-			item_reorder_qty = 0
-			if item + warehouse in item_reorder_detail_map:
-				item_reorder_level = item_reorder_detail_map[item + warehouse]["warehouse_reorder_level"]
-				item_reorder_qty = item_reorder_detail_map[item + warehouse]["warehouse_reorder_qty"]
+			boxes = 1
+			pieces = 1
+			if item_map[item]["boxes"] == boxes:
+				boxes = qty_dict.bal_qty				
+			else:
+				boxes = qty_dict.bal_qty/boxes	
+
+			if item_map[item]["pieces"] == pieces:
+				pieces = 0				
+			else:
+				pieces = (qty_dict.bal_qty/(item_map[item]["boxes"]/item_map[item]["pieces"]))%item_map[item]["pieces"]
+
+		#		item_reorder_level = item_reorder_detail_map[item + warehouse]["warehouse_reorder_level"]
+		#		item_reorder_qty = item_reorder_detail_map[item + warehouse]["warehouse_reorder_qty"]
 
 			report_data = [item, item_map[item]["item_name"],
 				item_map[item]["item_group"],
@@ -43,8 +52,8 @@ def execute(filters=None):
 				qty_dict.in_val, qty_dict.out_qty,
 				qty_dict.out_val, qty_dict.bal_qty,
 				qty_dict.bal_val, qty_dict.val_rate,
-				item_reorder_level,
-				item_reorder_qty,
+				boxes,
+				pieces,
 				company
 			]
 
@@ -76,11 +85,11 @@ def get_columns():
 		_("In Value")+":Float:80",
 		_("Out Qty")+":Float:80",
 		_("Out Value")+":Float:80",
-		_("Balance Qty")+":Float:100",
+		_("Balance Qty(SQM)")+":Float:100",
 		_("Balance Value")+":Float:100",
-		_("Valuation Rate")+":Float:90",
-		_("Reorder Level")+":Float:80",
-		_("Reorder Qty")+":Float:80",
+		_("Valuation Rate")+":Float:90",	
+		_("Boxes")+":Int:60",	
+		_("Pieces")+":Int:60",
 		_("Company")+":Link/Company:100"
 	]
 
@@ -209,7 +218,7 @@ def get_item_details(items, sle, filters):
 
 	if items:
 		for item in frappe.db.sql("""
-			select name, item_name, description, item_group, brand, stock_uom
+			select name, item_name, description, item_group, brand, stock_uom , boxes, pieces
 			from `tabItem`
 			where name in ({0}) and ifnull(disabled, 0) = 0
 			""".format(', '.join(['"' + frappe.db.escape(i, percent=False) + '"' for i in items])), as_dict=1):
