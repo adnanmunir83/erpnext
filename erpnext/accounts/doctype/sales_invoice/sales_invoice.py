@@ -993,3 +993,22 @@ def set_account_for_mode_of_payment(self):
 	for data in self.payments:
 		if not data.account:
 			data.account = get_bank_cash_account(data.mode_of_payment, self.company).get("account")
+
+@frappe.whitelist()
+def make_stock_entry(source_name, target_doc=None):
+	doc = get_mapped_doc("Sales Invoice", source_name, {
+		"Sales Invoice": {
+			"doctype": "Stock Entry",
+			"validation": {
+				"docstatus": ["=", 1]
+			}
+		},
+		"Sales Invoice Item": {
+			"doctype": "Stock Entry Detail",
+			"field_map": {
+				"stock_qty": "transfer_qty"
+			},
+		}
+	}, target_doc)
+
+	return doc

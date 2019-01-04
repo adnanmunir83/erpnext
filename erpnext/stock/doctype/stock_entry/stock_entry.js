@@ -130,6 +130,25 @@ frappe.ui.form.on('Stock Entry', {
 			}, __("Get items from"));
 		}
 
+		if (frm.doc.docstatus===0) {
+			frm.add_custom_button(__('Sales Return'), function() {
+				erpnext.utils.map_current_doc({
+					method: "erpnext.accounts.doctype.sales_invoice.sales_invoice.make_stock_entry",
+					source_doctype: "Sales Invoice",
+					target: frm,
+					date_field: "posting_date",
+					setters: {
+						customer: frm.doc.customer || undefined,
+					},
+					get_query_filters: {
+						docstatus: 1,
+						is_return:1,
+						company:frm.doc.company
+					}
+				})
+			}, __("Get items from"));
+		}
+
 		if(frm.doc.company) {
 			frm.trigger("toggle_display_account_head");
 		}
