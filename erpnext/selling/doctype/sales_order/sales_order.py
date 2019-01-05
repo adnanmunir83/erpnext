@@ -422,7 +422,7 @@ def make_material_request(source_name, target_doc=None):
 	def postprocess(source, doc):
 		doc.material_request_type = "Purchase"
 		if (not source.allow_delivery and source.advance_paid < source.rounded_total):
-			frappe.throw(_('Not allowed to create the Delivery Note before Payment'))
+			frappe.throw(_('Not allowed to create the Material Request before Payment'))
 
 
 	def update_item(source, target, source_parent):
@@ -544,6 +544,8 @@ def make_delivery_note(source_name, target_doc=None):
 @frappe.whitelist()
 def make_sales_invoice(source_name, target_doc=None, ignore_permissions=False):
 	def postprocess(source, target):
+		if (not source.allow_delivery and source.advance_paid < source.rounded_total):
+			frappe.throw(_('Not allowed to create the Sales Invoice before Payment'))
 		set_missing_values(source, target)
 		#Get the advance paid Journal Entries in Sales Invoice Advance
 		target.set_advances()
