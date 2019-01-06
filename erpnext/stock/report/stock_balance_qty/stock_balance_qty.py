@@ -33,7 +33,7 @@ def execute(filters=None):
 			if item_map[item]["boxes"] == boxes:
 				boxes = qty_dict.bal_qty				
 			else:
-				boxes = qty_dict.bal_qty/boxes	
+				boxes = qty_dict.bal_qty/item_map[item]["boxes"]	
 
 			if item_map[item]["pieces"] == pieces:
 				pieces = 0				
