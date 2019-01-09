@@ -62,7 +62,7 @@ def get_columns():
 		_("Qty") + ":Float:50", 
 		_("Boxes") + ":Int:50", 
 		_("Pieces") + ":Int:50", 
-		_("Balance Qty") + ":Float:100",
+		_("Balance Qty SQM") + ":Float:100",
 	#	{"label": _("Incoming Rate"), "fieldtype": "Currency", "width": 110,
 	#		"options": "Company:company:default_currency"},
 	#	{"label": _("Valuation Rate"), "fieldtype": "Currency", "width": 110,
