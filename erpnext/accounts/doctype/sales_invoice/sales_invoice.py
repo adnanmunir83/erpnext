@@ -996,6 +996,12 @@ def set_account_for_mode_of_payment(self):
 
 @frappe.whitelist()
 def make_stock_entry(source_name, target_doc=None):
+	def update_item(source_doc, target_doc, source_parent):
+		target_doc.qty = abs(flt(source_doc.qty))
+		target_doc.boxes = abs(int(source_doc.boxes))
+		target_doc.pieces = abs(int(source_doc.pieces))
+		target_doc.sqm = abs(flt(source_doc.sqm))
+
 	doc = get_mapped_doc("Sales Invoice", source_name, {
 		"Sales Invoice": {
 			"doctype": "Stock Entry",
@@ -1008,6 +1014,7 @@ def make_stock_entry(source_name, target_doc=None):
 			"field_map": {
 				"stock_qty": "transfer_qty"
 			},
+			"postprocess": update_item
 		}
 	}, target_doc)
 
