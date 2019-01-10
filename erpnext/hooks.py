@@ -189,6 +189,10 @@ doc_events = {
 		"on_submit": "erpnext.accounts.doctype.purchase_invoice.purchase_invoice.make_purchase_invoice_of_sales_invoice"
 		# "on_cancel": "erpnext.stock.doctype.material_request.material_request.update_completed_and_requested_qty"
 	},
+	"Purchase Invoice": {
+		"on_submit": "erpnext.accounts.doctype.purchase_invoice.purchase_invoice.make_purchase_invoice_of_sales_invoice"
+		# "on_cancel": "erpnext.stock.doctype.material_request.material_request.update_completed_and_requested_qty"
+	},
 	"User": {
 		"after_insert": "frappe.contacts.doctype.contact.contact.update_contact",
 		"validate": "erpnext.hr.doctype.employee.employee.validate_employee_role",
