@@ -420,9 +420,21 @@ def close_or_unclose_sales_orders(names, status):
 @frappe.whitelist()
 def make_material_request(source_name, target_doc=None):
 	def postprocess(source, doc):
-		doc.material_request_type = "Purchase"
+		doc.material_request_type = "Material Transfer"
 		if (not source.allow_delivery and source.advance_paid < source.rounded_total):
 			frappe.throw(_('Not allowed to create the Material Request before Payment'))
+	
+		
+		for d in source.get("items"):
+			req_qty = flt(frappe.db.sql("""select ifnull(sum(qty),0) from `tabMaterial Request Item`
+		                where docstatus<2 and item_code= %s 
+		               and sales_order = %s """,(d.item_code, source.name))[0][0])
+			sales_order_qty = flt(frappe.db.sql("select ifnull(qty,0) from `tabSales Order Item` where name= %s ",
+                                                (d.name))[0][0])
+			if ((req_qty + d.qty) - sales_order_qty) > 0:
+				frappe.throw(_("The total Requested quantity {0}   \
+		                cannot be greater than Sales Order quantity {1} , for Item {2}")
+                        .format(d.qty, sales_order_qty, d.item_code))
 
 
 	def update_item(source, target, source_parent):
