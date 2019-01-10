@@ -773,9 +773,10 @@ def make_stock_entry(source_name, target_doc=None):
 @frappe.whitelist()
 def make_purchase_invoice_of_sales_invoice(doc,method):
 	sales_order_no = ""
-	for d in doc.items:
-		if d.sales_order:
-			sales_order_no = d.sales_order
+	if(doc.doctype == "Sales Invoice"):
+		for d in doc.items:
+			if d.sales_order:
+				sales_order_no = d.sales_order
 	for row in doc.taxes:
 		if "22750 - Freight Payable" in row.account_head and row.tax_amount>0:
 			purchase_invoice=frappe.get_doc(
