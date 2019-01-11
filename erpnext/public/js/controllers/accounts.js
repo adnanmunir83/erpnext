@@ -42,13 +42,16 @@ frappe.ui.form.on(cur_frm.doctype, {
 				}
 			});
 		}
-		if (frm.doc.docstatus == 0 && in_list(["Quotation", "Sales Order", "Sales Invoice", "Delivery Note", "Purchase Order", "Purchase Receipt" ,"Stock Entry", "Material Request"], frm.doctype)) {
-			var item_childtable = $("div[data-fieldname='items']")[1];
+	},
+
+	refresh: function(frm) {
+		if (frm.doc.docstatus == 0 && in_list(["Quotation", "Sales Order", "Sales Invoice", "Delivery Note", "Purchase Order", "Stock Entry", "Material Request"], frm.doctype)) {
+			var item_childtable = frm.fields_dict["items"].$wrapper;
 			var grid_buttons = $(item_childtable).find(".grid-buttons");
 			if (!$(grid_buttons).find(".custom-add-multiple-rows").length) {
 				$(grid_buttons).append(`
 					<button type="reset" class="custom-add-multiple-rows btn btn-xs btn-default"
-							style="margin-right: 4px;">
+							style="margin-left: 4px;">
 						Add Items
 					</button>
 				`)

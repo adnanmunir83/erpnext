@@ -71,7 +71,7 @@ frappe.ui.form.on('Stock Entry', {
 	refresh: function(frm) {
 
 		if (frm.doc.docstatus == 0) {
-			var item_childtable = $("div[data-fieldname='items']")[1];
+			var item_childtable = frm.fields_dict["items"].$wrapper;
 			var grid_buttons = $(item_childtable).find(".grid-buttons");
 			if (!$(grid_buttons).find(".custom-add-multiple-rows").length) {
 				$(grid_buttons).append(`

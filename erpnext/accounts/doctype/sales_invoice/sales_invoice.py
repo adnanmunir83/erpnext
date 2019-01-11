@@ -61,6 +61,8 @@ class SalesInvoice(SellingController):
 		if not self.is_pos:
 			self.so_dn_required()
 
+		self.set_missing_so_detail()
+
 		self.validate_proj_cust()
 		self.validate_with_previous_doc()
 		self.validate_uom_is_integer("stock_uom", "stock_qty")
@@ -911,6 +913,24 @@ class SalesInvoice(SellingController):
 			if entry.amount < 0:
 				frappe.throw(_("Row #{0} (Payment Table): Amount must be positive").format(entry.idx))
 
+	def set_missing_so_detail(self):
+		for item in self.items:
+			if item.sales_order and not item.so_detail:
+				set_item_so_detail(item)
+
+def set_item_so_detail(item):
+	so_detail = frappe.db.sql_list("""
+						select name
+						from `tabSales Order Item`
+						where docstatus = 1 and parent = %s and item_code = %s 
+					""", [item.sales_order, item.item_code])
+
+	if not so_detail:
+		frappe.throw(_("Row {0}: Item {1} can not be found in Sales Order {2}").format(
+			item.idx, item.item_code, item.sales_order))
+
+	item.so_detail = so_detail[-1]
+
 def get_list_context(context=None):
 	from erpnext.controllers.website_list_for_contact import get_list_context
 	list_context = get_list_context(context)
@@ -993,6 +1013,89 @@ def set_account_for_mode_of_payment(self):
 	for data in self.payments:
 		if not data.account:
 			data.account = get_bank_cash_account(data.mode_of_payment, self.company).get("account")
+
+@frappe.whitelist()
+def split_invoice_between_warehouse(source_name):
+	source_doc = frappe.get_doc("Sales Invoice", source_name)
+
+	for d in source_doc.items:
+		if not d.warehouse:
+			frappe.throw(_("Row {0}: Warehouse not selected for Item {1}".format(d.idx, d.item_code)))
+
+	warehouses = set(map(lambda d: d.warehouse, source_doc.items))
+	if len(warehouses) <= 1:
+		frappe.throw(_("You can only split invoice if there is more than 1 warehouse selected"))
+
+	first_warehouse = source_doc.items[0].warehouse
+	warehouses.remove(first_warehouse)
+
+	doc_list = []
+	for warehouse in warehouses:
+		doc = frappe.copy_doc(source_doc, ignore_no_copy=1)
+		doc.set("taxes", [])
+		doc.set("payment_schedule", [])
+
+		doc.set("items", [])
+		items = [d for d in source_doc.items if d.warehouse == warehouse]
+		for item in items:
+			doc.append("items", item)
+
+		doc.set("advances", [])
+		doc.calculate_taxes_and_totals()
+		doc.set_advances()
+		doc.save()
+		doc_list.append(doc.name)
+
+	to_remove = [d for d in source_doc.items if d.warehouse != first_warehouse]
+	[source_doc.remove(d) for d in to_remove]
+	source_doc.set("advances", [])
+	source_doc.calculate_taxes_and_totals()
+	source_doc.set_advances()
+	source_doc.save()
+
+	frappe.msgprint(_("Sales Invoices ({0}) created".format(", ".join(doc_list))))
+
+@frappe.whitelist()
+def update_item_qty_based_on_sales_order(items):
+	from six import string_types
+	import json
+	if isinstance(items, string_types):
+		items = json.loads(items)
+
+	out = {}
+
+	items_codes_visited = set()
+	for item in items:
+		item = frappe._dict(item)
+		if item.sales_order:
+			row = {}
+			if not item.so_detail:
+				set_item_so_detail(item)
+				row['so_detail'] = item.so_detail
+
+			if item.item_code in items_codes_visited:
+				row['qty'] = 0
+				out[item.name] = row
+			else:
+				ordered_qty = frappe.get_value("Sales Order Item", item.so_detail, "qty")
+				if ordered_qty is None:
+					frappe.msgprint("Row {0}: Ignoring Item {1}. Could not find Sales Order Qty from Sales Order {2}".format(
+						item.idx, item.item_code, item.sales_order))
+
+				invoiced_qty = frappe.db.sql("""
+					select sum(qty)
+					from `tabSales Invoice Item`
+					where docstatus < 2 and so_detail = %s and parent != %s
+				""", [item.so_detail, item.parent])
+				invoiced_qty = invoiced_qty[0][0] if invoiced_qty else 0
+				invoiced_qty = flt(invoiced_qty)
+
+				remaining_qty = max(0, ordered_qty - invoiced_qty)
+				row['qty'] = remaining_qty
+				out[item.name] = row
+				items_codes_visited.add(item.item_code)
+
+	return out
 
 @frappe.whitelist()
 def make_stock_entry(source_name, target_doc=None):

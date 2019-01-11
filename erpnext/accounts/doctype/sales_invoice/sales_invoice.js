@@ -106,7 +106,90 @@ erpnext.accounts.SalesInvoiceController = erpnext.selling.SellingController.exte
 			this.frm.cscript.quotation_btn();
 		}
 
+		// Split Invoice between Warehouse
+		if (doc.docstatus == 0 && !doc.__islocal) {
+			var label = __("Split Invoice between Warehouses");
+			this.frm.remove_custom_button(label);
+			this.frm.add_custom_button(label, () => this.split_invoice_between_warehouse(this.frm));
+		}
+
+		// Validate Items, Update Qty based on Sales Order
+		var me = this;
+		if (doc.docstatus == 0) {
+			var item_childtable = me.frm.fields_dict["items"].$wrapper;
+			var grid_buttons = $(item_childtable).find(".grid-buttons");
+			if (!$(grid_buttons).find(".custom-update-item-qty").length) {
+				$(grid_buttons).append(`
+					<button type="reset" class="custom-update-item-qty btn btn-xs btn-default"
+							style="margin-left: 4px;">
+						Validate Items
+					</button>
+				`)
+			}
+			$(grid_buttons).find(".custom-update-item-qty").off().click(function() {
+				me.update_item_qty_based_on_sales_order(me.frm);
+			});
+		}
+
 		this.set_default_print_format();
+	},
+
+	update_item_qty_based_on_sales_order: function(frm) {
+		var items = [];
+		$.each(frm.doc.items || [], function(i, d) {
+			items.push({
+				name: d.name,
+				idx: d.idx,
+				item_code: d.item_code,
+				sales_order: d.sales_order,
+				so_detail: d.so_detail,
+				parent: frm.doc.name
+			});
+		});
+
+		if(items.length) {
+			frappe.call({
+				method: "erpnext.accounts.doctype.sales_invoice.sales_invoice.update_item_qty_based_on_sales_order",
+				args: {
+					"items": items
+				},
+				freeze: true,
+				callback: function(r) {
+					if(!r.exc) {
+						$.each(r.message || {}, function(cdn, row) {
+							frappe.model.set_value("Sales Invoice Item", cdn, "qty", row.qty);
+							if(row.so_detail) {
+								frappe.model.set_value("Sales Invoice Item", cdn, "so_detail", row.so_detail);
+							}
+						});
+						frm.refresh_field("items");
+					}
+				}
+			});
+		}
+	},
+
+	split_invoice_between_warehouse: function(frm) {
+		if(frm.is_dirty()) {
+			frappe.throw(__("You have unsaved changes. Please save or reload the document first."))
+		} else {
+			frappe.confirm(__("Are you sure you want to split this Sales Invoice between Warehouses?"),
+				() => frappe.call({
+					method: "erpnext.accounts.doctype.sales_invoice.sales_invoice.split_invoice_between_warehouse",
+					args: {
+						"source_name": frm.doc.name
+					},
+					freeze: true,
+					callback: function(r) {
+						//console.log(r);
+						if(!r.exc) {
+							frm.reload_doc();
+						}
+					}
+				}),
+				() => window.close()
+			);
+		}
 	},
 
 	on_submit: function(doc, dt, dn) {

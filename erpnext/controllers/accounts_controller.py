@@ -332,8 +332,13 @@ class AccountsController(TransactionBase):
 
 		res = self.get_advance_entries()
 
+		remaining_amount = flt(self.rounded_total or self.grand_total)
+
 		self.set("advances", [])
 		for d in res:
+			allocated_amount = min(remaining_amount, flt(d.amount)) if d.against_order else 0
+			remaining_amount = max(0, remaining_amount - allocated_amount)
+
 			self.append("advances", {
 				"doctype": self.doctype + " Advance",
 				"reference_type": d.reference_type,
@@ -341,7 +346,7 @@ class AccountsController(TransactionBase):
 				"reference_row": d.reference_row,
 				"remarks": d.remarks,
 				"advance_amount": flt(d.amount),
-				"allocated_amount": flt(d.amount) if d.against_order else 0
+				"allocated_amount": allocated_amount
 			})
 
 	def apply_shipping_rule(self):
