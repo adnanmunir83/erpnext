@@ -1032,6 +1032,8 @@ def split_invoice_between_warehouse(source_name):
 	doc_list = []
 	for warehouse in warehouses:
 		doc = frappe.copy_doc(source_doc, ignore_no_copy=1)
+		doc.direct_delivery_from_warehouse = 1
+		doc.custom_delivery_warehouse = warehouse
 		doc.set("taxes", [])
 		doc.set("payment_schedule", [])
 
@@ -1048,6 +1050,8 @@ def split_invoice_between_warehouse(source_name):
 
 	to_remove = [d for d in source_doc.items if d.warehouse != first_warehouse]
 	[source_doc.remove(d) for d in to_remove]
+	source_doc.direct_delivery_from_warehouse = 1
+	source_doc.custom_delivery_warehouse = first_warehouse
 	source_doc.set("advances", [])
 	source_doc.calculate_taxes_and_totals()
 	source_doc.set_advances()
