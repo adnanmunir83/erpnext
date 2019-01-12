@@ -425,16 +425,16 @@ def make_material_request(source_name, target_doc=None):
 			frappe.throw(_('Not allowed to create the Material Request before Payment'))
 	
 		
-		for d in source.get("items"):
-			req_qty = flt(frappe.db.sql("""select ifnull(sum(qty),0) from `tabMaterial Request Item`
-		                where docstatus<2 and item_code= %s 
-		               and sales_order = %s """,(d.item_code, source.name))[0][0])
-			sales_order_qty = flt(frappe.db.sql("select ifnull(qty,0) from `tabSales Order Item` where name= %s ",
-                                                (d.name))[0][0])
-			if ((req_qty + d.qty) - sales_order_qty) > 0:
-				frappe.throw(_("The total Requested quantity {0}   \
-		                cannot be greater than Sales Order quantity {1} , for Item {2}")
-                        .format(d.qty, sales_order_qty, d.item_code))
+		# for d in source.get("items"):
+		#	req_qty = flt(frappe.db.sql("""select ifnull(sum(qty),0) from `tabMaterial Request Item`
+		#                where docstatus<2 and item_code= %s 
+		#               and sales_order = %s """,(d.item_code, source.name))[0][0])
+		#	sales_order_qty = flt(frappe.db.sql("select ifnull(qty,0) from `tabSales Order Item` where name= %s ",
+        #                                        (d.name))[0][0])
+		#	if ((req_qty + d.qty) - sales_order_qty) > 0:
+		#		frappe.throw(_("The total Requested quantity {0}   \
+		#                cannot be greater than Sales Order quantity {1} , for Item {2}")
+        #                .format(d.qty, sales_order_qty, d.item_code)) */
 
 
 	def update_item(source, target, source_parent):
