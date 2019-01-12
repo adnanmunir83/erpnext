@@ -68,6 +68,7 @@ def _execute(filters=None, additional_table_columns=None, additional_query_colum
 
 		# total tax, grand total, outstanding amount & rounded total
 		row += [total_tax, inv.base_grand_total, flt(inv.base_grand_total, 2), inv.outstanding_amount]
+		row += [inv.company]
 		data.append(row)
 
 	return columns, data
@@ -119,7 +120,8 @@ def get_columns(invoice_list, additional_table_columns):
 
 	columns = columns + expense_columns + [_("Net Total") + ":Currency/currency:120"] + tax_columns + \
 		[_("Total Tax") + ":Currency/currency:120", _("Grand Total") + ":Currency/currency:120",
-			_("Rounded Total") + ":Currency/currency:120", _("Outstanding Amount") + ":Currency/currency:120"]
+			_("Rounded Total") + ":Currency/currency:120", _("Outstanding Amount") + ":Currency/currency:120",
+			_("Company") + ":Link/Company:100"]
 
 	return columns, expense_accounts, tax_accounts
 
@@ -145,7 +147,7 @@ def get_invoices(filters, additional_query_columns):
 		select
 			name, posting_date, credit_to, supplier, supplier_name, tax_id, bill_no, bill_date,
 			remarks, base_net_total, base_grand_total, outstanding_amount,
-			mode_of_payment {0}
+			mode_of_payment, company {0}
 		from `tabPurchase Invoice`
 		where docstatus = 1 %s
 		order by posting_date desc, name desc""".format(additional_query_columns or '') % conditions, filters, as_dict=1)
