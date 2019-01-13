@@ -300,6 +300,8 @@ class PurchaseInvoice(BuyingController):
 
 		# this sequence because outstanding may get -negative
 		self.make_gl_entries()
+		# Make Purchse Invoice for Opern Return Freight
+		self.make_purchase_invoice_of_open_return()
 
 		self.update_project()
 		self.update_fixed_asset()
@@ -731,6 +733,44 @@ class PurchaseInvoice(BuyingController):
 	def on_recurring(self, reference_doc, subscription_doc):
 		self.due_date = None
 
+	def make_purchase_invoice_of_open_return(self):	
+		if self.supplier_name== "OLD SYSTEM RETURN":
+			for row in self.taxes:
+				if "22745 - Freight Payable Control Account" in row.account_head and abs(row.tax_amount)>0 :
+					pi=frappe.get_doc(
+					{
+						'doctype': 'Purchase Invoice',
+						"naming_series": "PLC-",
+						"remarks": self.name,
+						"cust_sales_order": self.cust_sales_order,
+						"docstatus": 1,
+						"discount_amount": 0,
+						"supplier": "LOADER BIKE",
+						"supplier_name": "LOADER BIKE",
+						"is_paid": 0,
+						"company": self.company,
+						"set_posting_time": 0,
+						"is_return": 0,
+						"ignore_pricing_rule": 1,
+						"update_stock": 0,
+						"submit_on_creation": 1,
+						"items": [
+							{
+								"item_code": "99999",
+								"item_name": "FREIGHT CHARGES",
+								"qty": 1,
+								"cost_center": row.cost_center,
+								"rate": abs(row.tax_amount),
+								"received_qty": 1,
+								"uom": "Nos",
+								"conversion_factor": 1
+							}
+						]
+
+					})
+					pi.insert(ignore_permissions = True)
+				frappe.msgprint("Purchase Invoice has been Created.")
+
 @frappe.whitelist()
 def make_debit_note(source_name, target_doc=None):
 	from erpnext.controllers.sales_and_purchase_return import make_return_doc
@@ -813,7 +853,7 @@ def make_purchase_invoice_of_sales_invoice(doc,method):
 			purchase_invoice.insert(ignore_permissions = True)
 			frappe.msgprint("Purchase Invoice has been Created.")
 
-		if "22755 - Cutting / Fitting Charges" in row.account_head and row.tax_amount>0:
+		if "22755 - Cutting / Fitting Charges" in row.account_head and row.tax_amount>0 :
 			purchase_invoice=frappe.get_doc(
 				{
 					'doctype': 'Purchase Invoice',
@@ -847,3 +887,4 @@ def make_purchase_invoice_of_sales_invoice(doc,method):
 				})
 			purchase_invoice.insert(ignore_permissions = True)
 			frappe.msgprint("Purchase Invoice has been Created.")
+
