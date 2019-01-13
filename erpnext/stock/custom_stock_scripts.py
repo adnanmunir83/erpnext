@@ -51,7 +51,7 @@ def get_item_details(args):
 	else:
 		# search the given items from the seach fields
 		# doctype, txt, searchfield, start, page_len, filters, as_dict=False
-		items = custom_item_query("Item", args.txt, "name", 0, 30, {"is_sales_item": 1}, True)
+		items = custom_item_query("Item", args.txt, "name", 0, 50, {"is_sales_item": 1}, True)
 		item_dict =	{d.name: ", ".join(d.values()) for d in items}
 		item_list = item_dict.keys()
 
@@ -107,10 +107,10 @@ def get_item_details(args):
 def custom_item_query(doctype, txt, searchfield, start, page_len, filters, as_dict=False):
 	conditions = []
 
-	return frappe.db.sql("""select tabItem.name,
-		tabItem.item_name as item_name,
-		tabItem.item_group
+	return frappe.db.sql("""
+		select tabItem.name, tabItem.item_name as item_name, tabItem.item_group
 		from tabItem
+		left join tabBin on tabBin.item_code = tabItem.name
 		where tabItem.docstatus < 2
 			and tabItem.has_variants=0
 			and tabItem.disabled=0
@@ -120,11 +120,13 @@ def custom_item_query(doctype, txt, searchfield, start, page_len, filters, as_di
 				or tabItem.item_name LIKE %(txt)s
 				or tabItem.barcode LIKE %(txt)s)
 			{fcond} {mcond}
+		group by tabBin.item_code
 		order by
-			if(locate(%(_txt)s, name), locate(%(_txt)s, name), 99999),
-			if(locate(%(_txt)s, item_name), locate(%(_txt)s, item_name), 99999),
-			idx desc,
-			name, item_name
+			sum(ifnull(tabBin.actual_qty - tabBin.reserved_qty, 0)) desc,
+			if(locate(%(_txt)s, tabItem.name), locate(%(_txt)s, tabItem.name), 99999),
+			if(locate(%(_txt)s, tabItem.item_name), locate(%(_txt)s, tabItem.item_name), 99999),
+			tabItem.idx desc,
+			tabItem.name, tabItem.item_name
 		limit %(start)s, %(page_len)s """.format(
 			key=searchfield,
 			fcond=get_filters_cond(doctype, filters, conditions).replace('%', '%%'),
