@@ -736,7 +736,7 @@ class PurchaseInvoice(BuyingController):
 	def make_purchase_invoice_of_open_return(self):	
 		if self.supplier_name== "OLD SYSTEM RETURN":
 			for row in self.taxes:
-				if "22745 - Freight Payable Control Account" in row.account_head and abs(row.tax_amount)>0 :
+				if "22750 - Freight Payable" in row.account_head and abs(row.tax_amount)>0 :
 					pi=frappe.get_doc(
 					{
 						'doctype': 'Purchase Invoice',
