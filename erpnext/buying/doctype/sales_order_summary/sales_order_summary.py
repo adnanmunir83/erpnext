@@ -6,11 +6,10 @@ from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
 from frappe.desk.form.linked_with import get_linked_doctypes
-from frappe.desk.form.linked_with import get_linked_docs
 from collections import defaultdict
 
 
-class SalesOrderSummery(Document):
+class SalesOrderSummary(Document):
 	pass
 
 
@@ -24,21 +23,26 @@ def get_related_documents(doctype, docname):
 
 	# also consider the sales return
 	for linked_doctype in ["Sales Order", "Material Request", "Stock Entry", "Delivery Note", "Sales Invoice", "Payment Entry"]:
-		doc_details = get_linked_docs(doctype, docname, linked_doc_info, linked_doctype)
-		for doc in doc_details.get(linked_doctype, []):
+		link = linked_doc_info.get(linked_doctype)
+		filters = [[link.get('child_doctype', linked_doctype), link.get("fieldname"), '=', docname]]
+		if link.get("doctype_fieldname"):
+			filters.append([link.get('child_doctype'), link.get("doctype_fieldname"), "=", doctype])
+		names = frappe.get_all(linked_doctype, fields="name", filters=filters, distinct=1)
+
+		for doc in names:
 			doc_obj = frappe.get_doc(linked_doctype, doc.name)
-			if (linked_doctype == "Sales Invoice"):
+			if linked_doctype == "Sales Invoice":
 				si_list.append(doc_obj.name)
-			if (linked_doctype == "Sales Invoice") and doc_obj.is_return:
+			if linked_doctype == "Sales Invoice" and doc_obj.is_return:
 				document_details["Sales Return"].append(doc_obj.as_dict())
 			else:
 				document_details[linked_doctype].append(doc_obj.as_dict())
-	
+
 	# include the Payment Entry against invoice
 	if si_list:
-		payment_entry = frappe.get_all("Payment Entry", filters=[["reference_name", "in", si_list]])
-		payment_entry = frappe.db.sql('''select parent as name from `tabPayment Entry Reference` where reference_name in (%s)''' %
-			', '.join(['%s']*len(si_list)), tuple(si_list), as_dict=1)
+		payment_entry = frappe.db.sql(
+			'''select parent as name from `tabPayment Entry Reference` where reference_name in (%s)''' %
+			', '.join(['%s'] * len(si_list)), tuple(si_list), as_dict=1)
 		for pe in payment_entry:
 			pe_doc = frappe.get_doc("Payment Entry", pe.name).as_dict()
 			document_details["Payment Entry"].append(pe_doc)

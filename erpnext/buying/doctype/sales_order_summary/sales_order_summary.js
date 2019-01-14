@@ -1,7 +1,7 @@
 // Copyright (c) 2018, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
 
-frappe.ui.form.on('Sales Order Summery', {
+frappe.ui.form.on('Sales Order Summary', {
 	refresh: function(frm) {
 		frm.disable_save();
 		frm.page.clear_indicator();
@@ -12,13 +12,19 @@ frappe.ui.form.on('Sales Order Summery', {
 			frm.events.get_related_documents(frm);
 		}
 	},
+	reload_btn: function(frm) {
+		if (frm.doc.sales_order) {
+			frm.events.get_related_documents(frm);
+		}
+	},
 	get_related_documents: function(frm) {
 		frappe.call({
-			method: "erpnext.buying.doctype.sales_order_summery.sales_order_summery.get_related_documents",
+			method: "erpnext.buying.doctype.sales_order_summary.sales_order_summary.get_related_documents",
 			args: {
 				doctype: "Sales Order",
 				docname: frm.doc.sales_order
 			},
+			freeze: true,
 			callback: function(r) {
 				if (r.message) {
 					frm.events.render_documents(frm, r.message);
@@ -29,7 +35,7 @@ frappe.ui.form.on('Sales Order Summery', {
 	render_documents: function(frm, doc_details) {
 		console.log(doc_details);
 		$(frm.fields_dict.document_details.wrapper).empty();
-		var documents_details = $(frappe.render_template('sales_order_summery', {
+		var documents_details = $(frappe.render_template('sales_order_summary', {
 			frm: frm,
 			doc_details: doc_details,
 			sales_order_details: doc_details["Sales Order"],
