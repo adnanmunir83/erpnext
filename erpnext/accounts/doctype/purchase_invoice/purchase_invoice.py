@@ -812,79 +812,80 @@ def make_stock_entry(source_name, target_doc=None):
 
 @frappe.whitelist()
 def make_purchase_invoice_of_sales_invoice(doc,method):
-	sales_order_no = ""
-	if(doc.doctype == "Sales Invoice"):
-		for d in doc.items:
-			if d.sales_order:
-				sales_order_no = d.sales_order
-	for row in doc.taxes:
-		if "22750 - Freight Payable" in row.account_head and row.tax_amount>0:
-			purchase_invoice=frappe.get_doc(
-				{
-					'doctype': 'Purchase Invoice',
-					"naming_series": "PLC-",
-					"remarks": doc.name,
-					"cust_sales_order": sales_order_no,
-					"docstatus": 1,
-					"discount_amount": 0,
-					"supplier": "LOADER BIKE",
-					"supplier_name": "LOADER BIKE",
-					"is_paid": 0,
-					"company": doc.company,
-					"set_posting_time": 0,
-					"is_return": 0,
-					"ignore_pricing_rule": 1,
-					"update_stock": 0,
-					"submit_on_creation": 1,
-					"items": [
-						{
-							"item_code": "99999",
-							"item_name": "FREIGHT CHARGES",
-							"qty": 1,
-							"cost_center": row.cost_center,
-							"rate": row.tax_amount,
-							"received_qty": 1,
-							"uom": "Nos",
-							"conversion_factor": 1
-						}
-					]
+	if doc.update_stock:
+		sales_order_no = ""
+		if(doc.doctype == "Sales Invoice"):
+			for d in doc.items:
+				if d.sales_order:
+					sales_order_no = d.sales_order
+		for row in doc.taxes:
+			if "22750 - Freight Payable" in row.account_head and row.tax_amount>0:
+				purchase_invoice=frappe.get_doc(
+					{
+						'doctype': 'Purchase Invoice',
+						"naming_series": "PLC-",
+						"remarks": doc.name,
+						"cust_sales_order": sales_order_no,
+						"docstatus": 1,
+						"discount_amount": 0,
+						"supplier": "LOADER BIKE",
+						"supplier_name": "LOADER BIKE",
+						"is_paid": 0,
+						"company": doc.company,
+						"set_posting_time": 0,
+						"is_return": 0,
+						"ignore_pricing_rule": 1,
+						"update_stock": 0,
+						"submit_on_creation": 1,
+						"items": [
+							{
+								"item_code": "99999",
+								"item_name": "FREIGHT CHARGES",
+								"qty": 1,
+								"cost_center": row.cost_center,
+								"rate": row.tax_amount,
+								"received_qty": 1,
+								"uom": "Nos",
+								"conversion_factor": 1
+							}
+						]
 
-				})
-			purchase_invoice.insert(ignore_permissions = True)
-			frappe.msgprint("Purchase Invoice has been Created.")
+					})
+				purchase_invoice.insert(ignore_permissions = True)
+				frappe.msgprint("Purchase Invoice has been Created.")
 
-		if "22755 - Cutting / Fitting Charges" in row.account_head and row.tax_amount>0 :
-			purchase_invoice=frappe.get_doc(
-				{
-					'doctype': 'Purchase Invoice',
-					"naming_series": "P-SO-",
-					"remarks": doc.name,
-					"cust_sales_order": sales_order_no,
-					"docstatus": 1,
-					"discount_amount": 0,
-					"supplier": "Cutting / Fitting",
-					"supplier_name": "Cutting / Fitting",
-					"is_paid": 0,
-					"company": doc.company,
-					"set_posting_time": 0,
-					"is_return": 0,
-					"ignore_pricing_rule": 1,
-					"update_stock": 0,
-					"submit_on_creation": 1,
-					"items": [
-						{
-							"item_code": "99998",
-							"item_name": "Cutting / Fitting Charges",
-							"qty": 1,
-							"cost_center": row.cost_center,
-							"rate": row.tax_amount,
-							"received_qty": 1,
-							"uom": "Nos",
-							"conversion_factor": 1
-						}
-					]
+			if "22755 - Cutting / Fitting Charges" in row.account_head and row.tax_amount>0 :
+				purchase_invoice=frappe.get_doc(
+					{
+						'doctype': 'Purchase Invoice',
+						"naming_series": "P-SO-",
+						"remarks": doc.name,
+						"cust_sales_order": sales_order_no,
+						"docstatus": 1,
+						"discount_amount": 0,
+						"supplier": "Cutting / Fitting",
+						"supplier_name": "Cutting / Fitting",
+						"is_paid": 0,
+						"company": doc.company,
+						"set_posting_time": 0,
+						"is_return": 0,
+						"ignore_pricing_rule": 1,
+						"update_stock": 0,
+						"submit_on_creation": 1,
+						"items": [
+							{
+								"item_code": "99998",
+								"item_name": "Cutting / Fitting Charges",
+								"qty": 1,
+								"cost_center": row.cost_center,
+								"rate": row.tax_amount,
+								"received_qty": 1,
+								"uom": "Nos",
+								"conversion_factor": 1
+							}
+						]
 
-				})
-			purchase_invoice.insert(ignore_permissions = True)
-			frappe.msgprint("Purchase Invoice has been Created.")
+					})
+				purchase_invoice.insert(ignore_permissions = True)
+				frappe.msgprint("Purchase Invoice has been Created.")
 
