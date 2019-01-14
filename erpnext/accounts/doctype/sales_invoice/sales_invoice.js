@@ -157,10 +157,9 @@ erpnext.accounts.SalesInvoiceController = erpnext.selling.SellingController.exte
 				callback: function(r) {
 					if(!r.exc) {
 						$.each(r.message || {}, function(cdn, row) {
-							frappe.model.set_value("Sales Invoice Item", cdn, "qty", row.qty);
-							if(row.so_detail) {
-								frappe.model.set_value("Sales Invoice Item", cdn, "so_detail", row.so_detail);
-							}
+							$.each(row || {}, function(fieldname, value) {
+								frappe.model.set_value("Sales Invoice Item", cdn, fieldname, value);
+							});
 						});
 						frm.refresh_field("items");
 					}

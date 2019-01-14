@@ -1050,6 +1050,8 @@ def split_invoice_between_warehouse(source_name):
 
 	to_remove = [d for d in source_doc.items if d.warehouse != first_warehouse]
 	[source_doc.remove(d) for d in to_remove]
+	for i, d in enumerate(source_doc.items):
+		d.idx = i + 1
 	source_doc.direct_delivery_from_warehouse = 1
 	source_doc.custom_delivery_warehouse = first_warehouse
 	source_doc.set("advances", [])
@@ -1077,15 +1079,16 @@ def update_item_qty_based_on_sales_order(items):
 				set_item_so_detail(item)
 				row['so_detail'] = item.so_detail
 
+			so_item = frappe.get_value("Sales Order Item", item.so_detail, ["qty", "rate"], as_dict=1)
+			if not so_item:
+				frappe.msgprint("Row {0}: Ignoring Item {1}. Could not find Sales Order Item in {2}".format(
+					item.idx, item.item_code, item.sales_order))
+
+			row['rate'] = so_item.rate
+
 			if item.item_code in items_codes_visited:
 				row['qty'] = 0
-				out[item.name] = row
 			else:
-				ordered_qty = frappe.get_value("Sales Order Item", item.so_detail, "qty")
-				if ordered_qty is None:
-					frappe.msgprint("Row {0}: Ignoring Item {1}. Could not find Sales Order Qty from Sales Order {2}".format(
-						item.idx, item.item_code, item.sales_order))
-
 				invoiced_qty = frappe.db.sql("""
 					select sum(qty)
 					from `tabSales Invoice Item`
@@ -1094,10 +1097,11 @@ def update_item_qty_based_on_sales_order(items):
 				invoiced_qty = invoiced_qty[0][0] if invoiced_qty else 0
 				invoiced_qty = flt(invoiced_qty)
 
-				remaining_qty = max(0, ordered_qty - invoiced_qty)
+				remaining_qty = max(0, so_item.qty - invoiced_qty)
 				row['qty'] = remaining_qty
-				out[item.name] = row
-				items_codes_visited.add(item.item_code)
+
+			out[item.name] = row
+			items_codes_visited.add(item.item_code)
 
 	return out
 
