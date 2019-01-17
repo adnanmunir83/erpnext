@@ -742,7 +742,7 @@ class PurchaseInvoice(BuyingController):
 						'doctype': 'Purchase Invoice',
 						"naming_series": "PLC-",
 						"remarks": self.name,
-						"cust_sales_order": self.cust_sales_order,
+						"cust_sales_order": self.cust_sales_order or self.cust_shipment_no,
 						"docstatus": 1,
 						"discount_amount": 0,
 						"supplier": "LOADER BIKE",
