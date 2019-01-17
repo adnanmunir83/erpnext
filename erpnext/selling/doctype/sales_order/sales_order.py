@@ -559,6 +559,7 @@ def make_sales_invoice(source_name, target_doc=None, ignore_permissions=False):
 		if (not source.allow_delivery and source.advance_paid < source.rounded_total):
 			frappe.throw(_('Not allowed to create the Sales Invoice before Payment'))
 		set_missing_values(source, target)
+		adjust_taxes_and_charges(source, target)
 		#Get the advance paid Journal Entries in Sales Invoice Advance
 		target.set_advances()
 
@@ -574,6 +575,33 @@ def make_sales_invoice(source_name, target_doc=None, ignore_permissions=False):
 		target.update(get_company_address(target.company))
 		if target.company_address:
 			target.update(get_fetch_values("Sales Invoice", 'company_address', target.company_address))
+
+	def adjust_taxes_and_charges(source, target):
+		if not source.taxes:
+			return
+
+		tax_balance = {}
+
+		for tax in source.taxes:
+			if tax.charge_type == "Actual":
+				tax_balance.setdefault(tax.account_head, 0)
+				tax_balance[tax.account_head] += tax.tax_amount
+
+		invoice_taxes = frappe.db.sql("""
+			select t.account_head, t.tax_amount
+			from `tabSales Taxes and Charges` t
+			where t.parenttype='Sales Invoice' and t.charge_type='Actual' and exists(
+				select i.parent from `tabSales Invoice Item` i where i.sales_order=%s and t.parent=i.parent
+			) and docstatus < 2
+		""", [source.name], as_dict=1)
+
+		for tax in invoice_taxes:
+			tax_balance.setdefault(tax.account_head, 0)
+			tax_balance[tax.account_head] -= tax.tax_amount
+
+		for d in target.taxes:
+			if d.charge_type == "Actual":
+				d.tax_amount = max(0, tax_balance[d.account_head])
 
 	def update_item(source, target, source_parent):
 		target.amount = flt(source.amount) - flt(source.billed_amt)

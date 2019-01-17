@@ -110,6 +110,8 @@ class SalesInvoice(SellingController):
 		set_account_for_mode_of_payment(self)
 
 	def on_submit(self):
+		self.validate_taxes_and_charges_from_so()
+
 		self.validate_pos_paid_amount()
 
 		if not self.subscription:
@@ -918,6 +920,50 @@ class SalesInvoice(SellingController):
 			if item.sales_order and not item.so_detail:
 				set_item_so_detail(item)
 
+	def get_remaining_taxes_and_charges_amount(self, for_validate):
+		sales_orders = set([d.sales_order for d in self.items])
+		tax_balance = {}
+		for so in sales_orders:
+			order_taxes = frappe.db.sql("""
+				select account_head, tax_amount
+				from `tabSales Taxes and Charges`
+				where parenttype='Sales Order' and parent=%s and charge_type='Actual'
+			""", [so], as_dict=1)
+
+			for tax in order_taxes:
+				tax_balance.setdefault(tax.account_head, 0)
+				tax_balance[tax.account_head] += tax.tax_amount
+
+			docstatus_condition = "docstatus=1" if for_validate else "docstatus<2"
+			invoice_taxes = frappe.db.sql("""
+				select t.account_head, t.tax_amount
+				from `tabSales Taxes and Charges` t
+				where t.parenttype='Sales Invoice' and t.charge_type='Actual' and t.parent!=%s and exists(
+					select i.parent from `tabSales Invoice Item` i where i.sales_order=%s and t.parent=i.parent
+				) and {0}
+			""".format(docstatus_condition), [self.name, so], as_dict=1)
+
+			for tax in invoice_taxes:
+				tax_balance.setdefault(tax.account_head, 0)
+				tax_balance[tax.account_head] -= tax.tax_amount
+
+		return tax_balance
+
+	def validate_taxes_and_charges_from_so(self):
+		if not self.taxes:
+			return
+
+		tax_balance = self.get_remaining_taxes_and_charges_amount(for_validate=True)
+		for d in self.taxes:
+			if d.charge_type == "Actual":
+				if d.account_head not in tax_balance:
+					frappe.throw(_("Row #{0}: {1} could not be found in Sales Order").format(d.idx, d.description))
+
+				if d.tax_amount > tax_balance[d.account_head]:
+					frappe.throw(_("Row #{0}: {1} can not be greater than remaining amount of {2}")
+						.format(d.idx, d.description, tax_balance[d.account_head]))
+
+
 def set_item_so_detail(item):
 	so_detail = frappe.db.sql_list("""
 						select name
@@ -1055,6 +1101,12 @@ def split_invoice_between_warehouse(source_name):
 	source_doc.direct_delivery_from_warehouse = 1
 	source_doc.custom_delivery_warehouse = first_warehouse
 	source_doc.set("advances", [])
+
+	tax_balance = source_doc.get_remaining_taxes_and_charges_amount(for_validate=False)
+	for d in source_doc.taxes:
+		if d.account_head in tax_balance:
+			d.tax_amount = tax_balance[d.account_head]
+
 	source_doc.calculate_taxes_and_totals()
 	source_doc.set_advances()
 	source_doc.save()
