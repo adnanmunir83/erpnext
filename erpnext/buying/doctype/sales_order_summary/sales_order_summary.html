@@ -1,3 +1,21 @@
+<style>
+.table-condensed {
+	font-size:9pt;
+}
+.table-condensed th, .table-condensed td {
+	vertical-align:middle !important;
+}
+</style>
+
+{% function get_sum(details, parentfield, field) {
+	var sum = 0;
+	$.each(details || [], function(i, doc) {
+		$.each(doc[parentfield] || [], function(j, d) {
+			sum += d[field];
+		});
+	});
+	return flt(sum, 2);
+} %}
 
 <!-- Sales Order Details -->
 <div class="row">
@@ -65,15 +83,15 @@
 	<table class="table table-bordered table-condensed">
 		<thead>
 			<tr>
-				<th style="width: 110px">Name</th>
-				<th style="width: 140px">Status</th>
-				<th style="width: 360px">Item Name</th>
-				<th style="width: 90px">Net Rate</th>
-				<th style="width: 90px">Total Weight</th>
-				<th style="width: 90px">Qty</th>
-				<th style="width: 90px">Boxes</th>
-				<th style="width: 90px">Pieces</th>
-				<th style="width: 160px">Net Amount</th>
+				<th>Name</th>
+				<th>Status</th>
+				<th>Item Name</th>
+				<th style="text-align:right;">Net Rate</th>
+				<th style="text-align:right;">Total Weight</th>
+				<th style="text-align:right;">Qty</th>
+				<th style="text-align:right;">Boxes</th>
+				<th style="text-align:right;">Pieces</th>
+				<th style="text-align:right;">Net Amount</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -81,20 +99,33 @@
 				{% for so_item in so.items %}
 				<tr>
 					{% if (so_item.idx === 1) { %}
-					<td rowspan="{{so.items.length}}">{{ so.name }}</td>
+					<td rowspan="{{so.items.length}}" style="white-space:nowrap;">{{ so.name }}</td>
 					<td rowspan="{{so.items.length}}">{{ so.status }}</td>
 					{% } %}
 					<td>{{ so_item.item_name }}</td>
-					<td>{{ so_item.net_rate }}</td>
-					<td>{{ so_item.total_weight }}</td>
-					<td>{{ so_item.qty }}</td>
-					<td>{{ so_item.boxes }}</td>
-					<td>{{ so_item.pieces }}</td>
-					<td>{{ so_item.net_amount }}</td>
+					<td style="text-align:right;">{{ so_item.net_rate }}</td>
+					<td style="text-align:right;">{{ so_item.total_weight }}</td>
+					<td style="text-align:right;">{{ so_item.qty }}</td>
+					<td style="text-align:right;">{{ so_item.boxes }}</td>
+					<td style="text-align:right;">{{ so_item.pieces }}</td>
+					<td style="text-align:right;">{{ so_item.net_amount }}</td>
 				</tr>
 				{% endfor %}
 			{% endfor %}
 		</tbody>
+		<tfoot>
+			<tr>
+				<td></td>
+				<td></td>
+				<td style="text-align:right;"><strong>Total</strong></td>
+				<td style="text-align:right;">{{ get_sum(sales_order_details, "items", "net_rate") }}</td>
+				<td style="text-align:right;">{{ get_sum(sales_order_details, "items", "total_weight") }}</td>
+				<td style="text-align:right;">{{ get_sum(sales_order_details, "items", "qty") }}</td>
+				<td style="text-align:right;">{{ get_sum(sales_order_details, "items", "boxes") }}</td>
+				<td style="text-align:right;">{{ get_sum(sales_order_details, "items", "pieces") }}</td>
+				<td style="text-align:right;">{{ get_sum(sales_order_details, "items", "net_amount") }}</td>
+			</tr>
+		</tfoot>
 	</table>
 </div>
 
@@ -106,14 +137,14 @@
 	<table class="table table-bordered table-condensed">
 		<thead>
 			<tr>
-				<th style="width: 110px">Name</th>
-				<th style="width: 140px">Status</th>
-				<th style="width: 110px">Trans. Date</th>
-				<th style="width: 360px">Item Name</th>
-				<th style="width: 90px">Qty</th>
-				<th style="width: 90px">Boxes</th>
-				<th style="width: 90px">Pieces</th>
-				<th style="width: 160px">Location</th>
+				<th>Name</th>
+				<th>Status</th>
+				<th>Trans. Date</th>
+				<th>Item Name</th>
+				<th style="text-align:right;">Qty</th>
+				<th style="text-align:right;">Boxes</th>
+				<th style="text-align:right;">Pieces</th>
+				<th>Location</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -121,19 +152,31 @@
 				{% for mr_item in mr.items %}
 				<tr>
 					{% if (mr_item.idx === 1) { %}
-					<td rowspan="{{mr.items.length}}">{{ mr.name }}</td>
+					<td rowspan="{{mr.items.length}}" style="white-space:nowrap;">{{ mr.name }}</td>
 					<td rowspan="{{mr.items.length}}">{{ mr.status }}</td>
 					<td rowspan="{{mr.items.length}}">{{ mr.transaction_date }}</td>
 					{% } %}
 					<td>{{ mr_item.item_name }}</td>
-					<td>{{ mr_item.qty }}</td>
-					<td>{{ mr_item.boxes }}</td>
-					<td>{{ mr_item.pieces }}</td>
+					<td style="text-align:right;">{{ mr_item.qty }}</td>
+					<td style="text-align:right;">{{ mr_item.boxes }}</td>
+					<td style="text-align:right;">{{ mr_item.pieces }}</td>
 					<td>{{ mr_item.custom_warehouse_name }}</td>
 				</tr>
 				{% endfor %}
 			{% endfor %}
 		</tbody>
+		<tfoot>
+			<tr>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td style="text-align:right;"><strong>Total</strong></td>
+				<td style="text-align:right;">{{ get_sum(material_request_details, "items", "qty") }}</td>
+				<td style="text-align:right;">{{ get_sum(material_request_details, "items", "boxes") }}</td>
+				<td style="text-align:right;">{{ get_sum(material_request_details, "items", "pieces") }}</td>
+				<td></td>
+			</tr>
+		</tfoot>
 	</table>
 </div>
 {% } else { %}
@@ -147,16 +190,16 @@
 	<table class="table table-bordered table-condensed">
 		<thead>
 			<tr>
-				<th style="width: 110px">Name</th>
-				<th style="width: 140px">Transfer Type</th>
-				<th style="width: 110px">Posting Date</th>
-				<th style="width: 360px">Item Name</th>
-				<th style="width: 110px">From</th>
-				<th style="width: 110px">To</th>
-				<th style="width: 110px">Material Request</th>
-				<th style="width: 90px">Qty</th>
-				<th style="width: 90px">Boxes</th>
-				<th style="width: 90px">Pieces</th>
+				<th>Name</th>
+				<th>Transfer Type</th>
+				<th>Posting Date</th>
+				<th>Item Name</th>
+				<th>From</th>
+				<th>To</th>
+				<th>Material Request</th>
+				<th style="text-align:right;">Qty</th>
+				<th style="text-align:right;">Boxes</th>
+				<th style="text-align:right;">Pieces</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -164,7 +207,7 @@
 				{% for se_item in se.items %}
 				<tr>
 					{% if (se_item.idx === 1) { %}
-					<td rowspan="{{se.items.length}}">{{ se.name }}</td>
+					<td rowspan="{{se.items.length}}" style="white-space:nowrap;">{{ se.name }}</td>
 					<td rowspan="{{se.items.length}}">{{ se.transfer_type }}</td>
 					<td rowspan="{{se.items.length}}">{{ se.posting_date }}</td>
 					{% } %}
@@ -172,13 +215,27 @@
 					<td>{{ se_item.s_warehouse }}</td>
 					<td>{{ se_item.t_warehouse }}</td>
 					<td>{{ se_item.material_request }}</td>
-					<td>{{ se_item.qty }}</td>
-					<td>{{ se_item.boxes }}</td>
-					<td>{{ se_item.pieces }}</td>
+					<td style="text-align:right;">{{ se_item.qty }}</td>
+					<td style="text-align:right;">{{ se_item.boxes }}</td>
+					<td style="text-align:right;">{{ se_item.pieces }}</td>
 				</tr>
 				{% endfor %}
 			{% endfor %}
 		</tbody>
+		<tfoot>
+			<tr>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td style="text-align:right;"><strong>Total</strong></td>
+				<td style="text-align:right;">{{ get_sum(stock_entry_details, "items", "qty") }}</td>
+				<td style="text-align:right;">{{ get_sum(stock_entry_details, "items", "boxes") }}</td>
+				<td style="text-align:right;">{{ get_sum(stock_entry_details, "items", "pieces") }}</td>
+			</tr>
+		</tfoot>
 	</table>
 </div>
 {% } else { %}
@@ -193,14 +250,14 @@
 	<table class="table table-bordered table-condensed">
 		<thead>
 			<tr>
-				<th style="width: 110px">Name</th>
-				<th style="width: 140px">Status</th>
-				<th style="width: 110px">Posting Date</th>
-				<th style="width: 360px">Item Name</th>
-				<th style="width: 90px">Qty</th>
-				<th style="width: 90px">Boxes</th>
-				<th style="width: 90px">Pieces</th>
-				<th style="width: 110px">Location</th>
+				<th>Name</th>
+				<th>Status</th>
+				<th>Posting Date</th>
+				<th>Item Name</th>
+				<th style="text-align:right;">Qty</th>
+				<th style="text-align:right;">Boxes</th>
+				<th style="text-align:right;">Pieces</th>
+				<th>Location</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -208,19 +265,31 @@
 				{% for de_item in de.items %}
 				<tr>
 					{% if (de_item.idx === 1) { %}
-					<td rowspan="{{de.items.length}}">{{ de.name }}</td>
+					<td rowspan="{{de.items.length}}" style="white-space:nowrap;">{{ de.name }}</td>
 					<td rowspan="{{de.items.length}}">{{ de.status }}</td>
 					<td rowspan="{{de.items.length}}">{{ de.posting_date }}</td>
 					{% } %}
 					<td>{{ de_item.item_name }}</td>
-					<td>{{ de_item.qty }}</td>
-					<td>{{ de_item.boxes }}</td>
-					<td>{{ de_item.pieces }}</td>
+					<td style="text-align:right;">{{ de_item.qty }}</td>
+					<td style="text-align:right;">{{ de_item.boxes }}</td>
+					<td style="text-align:right;">{{ de_item.pieces }}</td>
 					<td>{{ de_item.warehouse }}</td>
 				</tr>
 				{% endfor %}
 			{% endfor %}
 		</tbody>
+		<tfoot>
+			<tr>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td style="text-align:right;"><strong>Total</strong></td>
+				<td style="text-align:right;">{{ get_sum(delivery_note_details, "items", "qty") }}</td>
+				<td style="text-align:right;">{{ get_sum(delivery_note_details, "items", "boxes") }}</td>
+				<td style="text-align:right;">{{ get_sum(delivery_note_details, "items", "pieces") }}</td>
+				<td></td>
+			</tr>
+		</tfoot>
 	</table>
 </div>
 {% } else { %}
@@ -235,16 +304,16 @@
 	<table class="table table-bordered table-condensed">
 		<thead>
 			<tr>
-				<th style="width: 110px">Name</th>
-				<th style="width: 140px">Status</th>
-				<th style="width: 140px">Posting Date</th>
-				<th style="width: 360px">Item Name</th>
-				<th style="width: 90px">Net Rate</th>
-				<th style="width: 90px">Qty</th>
-				<th style="width: 90px">Boxes</th>
-				<th style="width: 90px">Pieces</th>
-				<th style="width: 160px">Net Amount</th>
-				<th style="width: 90px">Warehouse</th>
+				<th>Name</th>
+				<th>Status</th>
+				<th>Posting Date</th>
+				<th>Item Name</th>
+				<th>Net Rate</th>
+				<th style="text-align:right;">Qty</th>
+				<th style="text-align:right;">Boxes</th>
+				<th style="text-align:right;">Pieces</th>
+				<th style="text-align:right;">Net Amount</th>
+				<th>Warehouse</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -252,21 +321,35 @@
 				{% for si_item in si.items %}
 				<tr>
 					{% if (si_item.idx === 1) { %}
-					<td rowspan="{{si.items.length}}">{{ si.name }}</td>
+					<td rowspan="{{si.items.length}}" style="white-space:nowrap;">{{ si.name }}</td>
 					<td rowspan="{{si.items.length}}">{{ si.status }}</td>
 					<td rowspan="{{si.items.length}}">{{ si.posting_date }}</td>
 					{% } %}
 					<td>{{ si_item.item_name }}</td>
 					<td>{{ si_item.net_rate }}</td>
-					<td>{{ si_item.qty }}</td>
-					<td>{{ si_item.boxes }}</td>
-					<td>{{ si_item.pieces }}</td>
-					<td>{{ si_item.net_amount }}</td>
+					<td style="text-align:right;">{{ si_item.qty }}</td>
+					<td style="text-align:right;">{{ si_item.boxes }}</td>
+					<td style="text-align:right;">{{ si_item.pieces }}</td>
+					<td style="text-align:right;">{{ si_item.net_amount }}</td>
 					<td>{{ si_item.warehouse }}</td>
 				</tr>
 				{% endfor %}
 			{% endfor %}
 		</tbody>
+		<tfoot>
+			<tr>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td style="text-align:right;"><strong>Total</strong></td>
+				<td style="text-align:right;">{{ get_sum(sales_invoice_details, "items", "net_rate") }}</td>
+				<td style="text-align:right;">{{ get_sum(sales_invoice_details, "items", "qty") }}</td>
+				<td style="text-align:right;">{{ get_sum(sales_invoice_details, "items", "boxes") }}</td>
+				<td style="text-align:right;">{{ get_sum(sales_invoice_details, "items", "pieces") }}</td>
+				<td style="text-align:right;">{{ get_sum(sales_invoice_details, "items", "net_amount") }}</td>
+				<td></td>
+			</tr>
+		</tfoot>
 	</table>
 </div>
 {% } else { %}
@@ -281,20 +364,20 @@
 	<table class="table table-bordered table-condensed">
 		<thead>
 			<tr>
-				<th style="width: 110px">Name</th>
-				<th style="width: 140px">Status</th>
-				<th style="width: 140px">Posting Date</th>
-				<th style="width: 140px">Created By</th>
+				<th>Name</th>
+				<th>Status</th>
+				<th>Posting Date</th>
+				<th>Created By</th>
 
-				<th style="width: 360px">Item Name</th>
-				<th style="width: 90px">Net Rate</th>
-				<th style="width: 90px">Qty</th>
-				<th style="width: 90px">Boxes</th>
-				<th style="width: 90px">Pieces</th>
-				<th style="width: 90px">Breakge Boxes</th>
-				<th style="width: 90px">Breakage Pieces</th>
-				<th style="width: 160px">Net Amount</th>
-				<th style="width: 90px">Warehouse</th>
+				<th>Item Name</th>
+				<th>Net Rate</th>
+				<th style="text-align:right;">Qty</th>
+				<th style="text-align:right;">Boxes</th>
+				<th style="text-align:right;">Pieces</th>
+				<th style="text-align:right;">Breakge Boxes</th>
+				<th style="text-align:right;">Breakage Pieces</th>
+				<th style="text-align:right;">Net Amount</th>
+				<th>Warehouse</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -302,24 +385,41 @@
 				{% for si_item in si.items %}
 				<tr>
 					{% if (si_item.idx === 1) { %}
-					<td rowspan="{{si.items.length}}">{{ si.name }}</td>
+					<td rowspan="{{si.items.length}}" style="white-space:nowrap;">{{ si.name }}</td>
 					<td rowspan="{{si.items.length}}">{{ si.status }}</td>
 					<td rowspan="{{si.items.length}}">{{ si.posting_date }}</td>
 					<td rowspan="{{si.items.length}}">{{ si.owner }}</td>
 					{% } %}
 					<td>{{ si_item.item_name }}</td>
 					<td>{{ si_item.net_rate }}</td>
-					<td>{{ si_item.qty }}</td>
-					<td>{{ si_item.boxes }}</td>
-					<td>{{ si_item.pieces }}</td>
-					<td>{{ si_item.breakage_boxes }}</td>
-					<td>{{ si_item.breakage_pieces }}</td>
-					<td>{{ si_item.net_amount }}</td>
+					<td style="text-align:right;">{{ si_item.qty }}</td>
+					<td style="text-align:right;">{{ si_item.boxes }}</td>
+					<td style="text-align:right;">{{ si_item.pieces }}</td>
+					<td style="text-align:right;">{{ si_item.breakage_boxes }}</td>
+					<td style="text-align:right;">{{ si_item.breakage_pieces }}</td>
+					<td style="text-align:right;">{{ si_item.net_amount }}</td>
 					<td>{{ si_item.warehouse }}</td>
 				</tr>
 				{% endfor %}
 			{% endfor %}
 		</tbody>
+		<tfoot>
+			<tr>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td style="text-align:right;"><strong>Total</strong></td>
+				<td style="text-align:right;">{{ get_sum(sales_return_details, "items", "net_rate") }}</td>
+				<td style="text-align:right;">{{ get_sum(sales_return_details, "items", "qty") }}</td>
+				<td style="text-align:right;">{{ get_sum(sales_return_details, "items", "boxes") }}</td>
+				<td style="text-align:right;">{{ get_sum(sales_return_details, "items", "pieces") }}</td>
+				<td style="text-align:right;">{{ get_sum(sales_return_details, "items", "breakage_boxes") }}</td>
+				<td style="text-align:right;">{{ get_sum(sales_return_details, "items", "breakage_pieces") }}</td>
+				<td style="text-align:right;">{{ get_sum(sales_return_details, "items", "net_amount") }}</td>
+				<td></td>
+			</tr>
+		</tfoot>
 	</table>
 </div>
 {% } else { %}
@@ -334,15 +434,15 @@
 	<table class="table table-bordered table-condensed">
 		<thead>
 			<tr>
-				<th style="width: 110px">Name</th>
-				<th style="width: 150px">Mode of Payment</th>
-				<th style="width: 150px">Payment Type</th>
-				<th style="width: 150px">Party Name</th>
+				<th>Name</th>
+				<th>Mode of Payment</th>
+				<th>Payment Type</th>
+				<th>Party Name</th>
 
-				<th style="width: 300px">Reference Name</th>
-				<th style="width: 110px">Total Amount</th>
-				<th style="width: 110px">Outstanding Amount</th>
-				<th style="width: 110px">Allocated Amount</th>
+				<th>Reference Name</th>
+				<th style="text-align:right;">Total Amount</th>
+				<th style="text-align:right;">Outstanding Amount</th>
+				<th style="text-align:right;">Allocated Amount</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -350,19 +450,31 @@
 				{% for pe_ref in pe.references %}
 				<tr>
 					{% if (pe_ref.idx === 1) { %}
-					<td rowspan="{{pe.references.length}}">{{ pe.name }}</td>
+					<td rowspan="{{pe.references.length}}" style="white-space:nowrap;">{{ pe.name }}</td>
 					<td rowspan="{{pe.references.length}}">{{ pe.mode_of_payment }}</td>
 					<td rowspan="{{pe.references.length}}">{{ pe.payment_type }}</td>
 					<td rowspan="{{pe.references.length}}">{{ pe.party_name }}</td>
 					{% } %}
 					<td>{{ pe_ref.reference_name }}</td>
-					<td>{{ pe_ref.total_amount }}</td>
-					<td>{{ pe_ref.outstanding_amount }}</td>
-					<td>{{ pe_ref.allocated_amount }}</td>
+					<td style="text-align:right;">{{ pe_ref.total_amount }}</td>
+					<td style="text-align:right;">{{ pe_ref.outstanding_amount }}</td>
+					<td style="text-align:right;">{{ pe_ref.allocated_amount }}</td>
 				</tr>
 				{% endfor %}
 			{% endfor %}
 		</tbody>
+		<tfoot>
+			<tr>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td style="text-align:right;"><strong>Total</strong></td>
+				<td style="text-align:right;">{{ get_sum(paymeny_entry_details, "references", "total_amount") }}</td>
+				<td style="text-align:right;">{{ get_sum(paymeny_entry_details, "references", "outstanding_amount") }}</td>
+				<td style="text-align:right;">{{ get_sum(paymeny_entry_details, "references", "allocated_amount") }}</td>
+			</tr>
+		</tfoot>
 	</table>
 </div>
 {% } else { %}

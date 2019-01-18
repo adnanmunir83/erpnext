@@ -20,8 +20,8 @@
 
 <h2 class="text-center">{%= __(report.report_name) %}</h2>
 <h4 class="text-center">
-	{% if (filters.customer_name) { %}
-		{%= filters.customer_name %}
+	{% if (filters.customer_name || filters.supplier_name) { %}
+		{%= filters.customer_name || filters.supplier_name %}
 	{% } else { %}
 		{%= filters.customer || filters.supplier %}
 	{% } %}
