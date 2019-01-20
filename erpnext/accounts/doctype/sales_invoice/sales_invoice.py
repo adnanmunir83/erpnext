@@ -112,6 +112,8 @@ class SalesInvoice(SellingController):
 	def on_submit(self):
 		if not self.is_return:
 			self.validate_taxes_and_charges_from_so()
+		if self.update_stock:
+			self.validate_user_warehouse()
 
 		self.validate_pos_paid_amount()
 
@@ -963,6 +965,14 @@ class SalesInvoice(SellingController):
 				if d.tax_amount > tax_balance[d.account_head]:
 					frappe.throw(_("Row #{0}: {1} can not be greater than remaining amount of {2}")
 						.format(d.idx, d.description, tax_balance[d.account_head]))
+	
+	def validate_user_warehouse(self):
+		user_warehouse = frappe.db.get_value("User",{"name": frappe.session['user']}, "user_warehouse")
+		for item in self.items:
+			if not (item.warehouse in user_warehouse or item.warehouse in (user_warehouse.replace("Normal","Breakage"))):
+				frappe.throw(_("You are not allowed to submit Invoice in Warehoues:<b> {0} </b>  for Item Code  <b>{1}</b>")
+				.format(item.warehouse,item.item_code))
+		
 
 
 def set_item_so_detail(item):
