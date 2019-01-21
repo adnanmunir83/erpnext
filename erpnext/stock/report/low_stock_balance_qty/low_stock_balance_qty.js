@@ -40,11 +40,12 @@ frappe.query_reports["Low Stock Balance Qty"] = {
 			}
 		},
 		{
-			"fieldname": "warehouse",
-			"label": __("Warehouse"),
+			"fieldname": "company",
+			"label": __("Company"),
 			"fieldtype": "Link",
 			"width": "80",
-			"options": "Warehouse"
+			"options": "Company",
+			"reqd":1
 		},
 		{
 			"fieldname": "show_variant_attributes",

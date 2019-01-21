@@ -22,41 +22,37 @@ def execute(filters=None):
 
 	iwb_map = get_item_warehouse_map(filters, sle)
 	item_map = get_item_details(items, sle, filters)
-#	item_reorder_detail_map = get_item_reorder_details(item_map.keys())
+	reserved_stock = get_company_reserved_stock(filters)
 
 	data = []
-	for (company, item, warehouse) in sorted(iwb_map):
-		if item_map.get(item):
-			qty_dict = iwb_map[(company, item, warehouse)]
+	for (company,item) in sorted(iwb_map):
+		if item_map.get(item):			
+			qty_dict = iwb_map[(company,item)]
+
+
+			availble_qty = (qty_dict.bal_qty - reserved_stock[item]["reserved_qty"])
+			
 			boxes = 1
 			pieces = 1
 			if item_map[item]["boxes"] == boxes:
-				boxes = qty_dict.bal_qty				
+				boxes = availble_qty				
 			else:
-				boxes = qty_dict.bal_qty/item_map[item]["boxes"]	
+				boxes = availble_qty/item_map[item]["boxes"]	
 
 			if item_map[item]["pieces"] == pieces:
 				pieces = 0				
 			else:
-				pieces = (qty_dict.bal_qty/(item_map[item]["boxes"]/item_map[item]["pieces"]))%item_map[item]["pieces"]
-
-		#		item_reorder_level = item_reorder_detail_map[item + warehouse]["warehouse_reorder_level"]
-		#		item_reorder_qty = item_reorder_detail_map[item + warehouse]["warehouse_reorder_qty"]
-
+				pieces = (availble_qty/(item_map[item]["boxes"]/item_map[item]["pieces"]))%item_map[item]["pieces"]
+			
 			report_data = [item, item_map[item]["item_name"],
 				item_map[item]["item_group"],
 				item_map[item]["brand"],
-			#	item_map[item]["description"], 
-				warehouse,
 				item_map[item]["stock_uom"], qty_dict.opening_qty,
-			#	qty_dict.opening_val,
-				qty_dict.in_qty,
-			#	qty_dict.in_val,
-				qty_dict.out_qty,
-			#	qty_dict.out_val, 
+				qty_dict.in_qty,			
+				qty_dict.out_qty,			
 				qty_dict.bal_qty,
-			#	qty_dict.bal_val, 
-			#	qty_dict.val_rate,
+				reserved_stock[item]["reserved_qty"],
+				availble_qty,
 				boxes,
 				pieces,
 				company
@@ -82,7 +78,7 @@ def get_columns():
 		_("Item Group")+":Link/Item Group:100",
 		_("Brand")+":Link/Brand:90",
 	#	_("Description")+"::140",
-		_("Warehouse")+":Link/Warehouse:100",
+	#	_("Warehouse")+":Link/Warehouse:100",
 		_("Stock UOM")+":Link/UOM:90",
 		_("Opening Qty")+":Float:100",
 	#	_("Opening Value")+":Float:110",
@@ -91,7 +87,8 @@ def get_columns():
 		_("Out Qty")+":Float:80",
 	#	_("Out Value")+":Float:80",
 		_("Balance Qty(SQM)")+":Float:100",
-	#	_("Balance Value")+":Float:100",
+		_("Hold Qty(SQM)")+":Float:100",
+		_("Available Qty(SQM)")+":Float:100",
 	#	_("Valuation Rate")+":Float:90",	
 		_("Boxes")+":Int:60",	
 		_("Pieces")+":Int:60",
@@ -110,13 +107,12 @@ def get_conditions(filters):
 	else:
 		frappe.throw(_("'To Date' is required"))
 
-	if filters.get("warehouse"):
-		warehouse_details = frappe.db.get_value("Warehouse",
-			filters.get("warehouse"), ["lft", "rgt"], as_dict=1)
-		if warehouse_details:
-			conditions += " and exists (select name from `tabWarehouse` wh \
-				where wh.lft >= %s and wh.rgt <= %s and sle.warehouse = wh.name)"%(warehouse_details.lft,
-				warehouse_details.rgt)
+	#if filters.get("company"):
+	#	warehouse_details = frappe.db.get_value("Warehouse",
+	#		filters.get("warehouse"), ["lft", "rgt"], as_dict=1)
+	if filters.get("company"):
+		conditions += " and sle.warehouse in (select name from `tabWarehouse` wh \
+			where rejected_warehouse!=1 and company='%s')"%(filters.get("company"))
 
 	return conditions
 
@@ -144,7 +140,7 @@ def get_item_warehouse_map(filters, sle):
 	to_date = getdate(filters.get("to_date"))
 
 	for d in sle:
-		key = (d.company, d.item_code, d.warehouse)
+		key = (d.company, d.item_code)
 		if key not in iwb_map:
 			iwb_map[key] = frappe._dict({
 				"opening_qty": 0.0, "opening_val": 0.0,
@@ -154,7 +150,7 @@ def get_item_warehouse_map(filters, sle):
 				"val_rate": 0.0
 			})
 
-		qty_dict = iwb_map[(d.company, d.item_code, d.warehouse)]
+		qty_dict = iwb_map[(d.company, d.item_code)]
 
 		if d.voucher_type == "Stock Reconciliation":
 			qty_diff = flt(d.qty_after_transaction) - qty_dict.bal_qty
@@ -184,8 +180,8 @@ def get_item_warehouse_map(filters, sle):
 	return iwb_map
 	
 def filter_items_with_no_transactions(iwb_map):
-	for (company, item, warehouse) in sorted(iwb_map):
-		qty_dict = iwb_map[(company, item, warehouse)]
+	for (company, item) in sorted(iwb_map):
+		qty_dict = iwb_map[(company, item)]
 		
 		no_transactions = True
 		float_precision = cint(frappe.db.get_default("float_precision")) or 3
@@ -196,7 +192,7 @@ def filter_items_with_no_transactions(iwb_map):
 				no_transactions = False
 		
 		if no_transactions:
-			iwb_map.pop((company, item, warehouse))
+			iwb_map.pop((company, item))
 
 	return iwb_map
 
@@ -215,6 +211,19 @@ def get_items(filters):
 		items = frappe.db.sql_list("""select name from `tabItem` item where {}"""
 			.format(" and ".join(conditions)), filters)
 	return items
+
+def get_company_reserved_stock(filters):
+
+	reserved_items = []
+	reserved_items = frappe.db.sql("""select item_code,sum(reserved_qty)reserved_qty from tabBin 
+		where warehouse in (select name from tabWarehouse where company='%s' and rejected_warehouse!=1)		
+		group by item_code """ %(filters.get("company")), as_dict=1)
+	order_reserved_items = {}
+	for ritems in reserved_items:
+		order_reserved_items.setdefault(ritems.item_code, ritems)
+	#	order_reserved_items[ritems.item_code].append(ritems)
+	#reserved_items.setdefault(item.name, item)
+	return order_reserved_items
 
 def get_item_details(items, sle, filters):
 	item_details = {}
@@ -235,23 +244,11 @@ def get_item_details(items, sle, filters):
 
 	return item_details
 
-def get_item_reorder_details(items):
-	item_reorder_details = frappe._dict()
-
-	if items:
-		item_reorder_details = frappe.db.sql("""
-			select parent, warehouse, warehouse_reorder_qty, warehouse_reorder_level
-			from `tabItem Reorder`
-			where parent in ({0})
-		""".format(', '.join(['"' + frappe.db.escape(i, percent=False) + '"' for i in items])), as_dict=1)
-
-	return dict((d.parent + d.warehouse, d) for d in item_reorder_details)
-
 def validate_filters(filters):
-	if not (filters.get("item_code") or filters.get("warehouse")):
+	if not (filters.get("item_code") or filters.get("company")):
 		sle_count = flt(frappe.db.sql("""select count(name) from `tabStock Ledger Entry`""")[0][0])
 		if sle_count > 500000:
-			frappe.throw(_("Please set filter based on Item or Warehouse"))
+			frappe.throw(_("Please set filter based on Item"))
 
 def get_variants_attributes():
 	'''Return all item variant attributes.'''
