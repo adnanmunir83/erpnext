@@ -11,21 +11,21 @@
 	{%= dateutil.str_to_user(filters.to_date) %}
 	<br>
 	<span class="text-left" style="text-align:left;">
-    {%= filters.cashmod %}<br>{%= filters.creditmod %}<br>
-    {%= filters.chequemod %}</span>
+		{%= __("(") %}{%= filters.cashmod %} {%= __(")                (") %} {%= filters.creditmod %} {%= __(")         (") %} 
+		{%= filters.chequemod %}{%= __(")") %} </span>
 </h5>
 <hr>
 <table class="table table-bordered">
 	<thead>
 		<tr>
 			<th style="width: 4%">{%= __("Code") %}</th>
-			<th style="width: 10%">{%= __("Party") %}</th>
-			<th style="width: 36%">{%= __("Reference") %}</th>
-			<th style="width: 35%">{%= __("Remarks") %}</th>
-			<th style="width: 5%">{%= __("Cash") %}</th>
-			<th style="width: 5%">{%= __("Credit Card") %}</th>
-			<th style="width: 5%">{%= __("Cheque") %}</th>			
-			<th style="width: 5%">{%= __("Total") %}</th>		
+			<th style="width: 8%">{%= __("Party") %}</th>
+			<th style="width: 31%">{%= __("Reference") %}</th>
+			<th style="width: 44%">{%= __("Remarks") %}</th>
+			<th style="width: 3%">{%= __("Cash") %}</th>
+			<th style="width: 3%">{%= __("Credit Card") %}</th>
+			<th style="width: 3%">{%= __("Cheque") %}</th>			
+			<th style="width: 3%">{%= __("Total") %}</th>		
 		</tr>
 	</thead>
 	<tbody>
@@ -35,10 +35,10 @@
 				<td style="font-size: 9px;">{%= data[i][__("Party")] %}</td>
 				<td style="font-size: 9px;">{%= data[i][__("Reference")] %}</td>
 				<td style="font-size: 9px;">{%= data[i][__("Remarks")] %}</td>
-				<td style="font-size: 11px;">{%= format_currency(data[i][__("Cash")]) %}</td>
-				<td style="font-size: 11px;">{%= format_currency(data[i][__("Cheque")]) %}</td>	
-				<td style="font-size: 11px;">{%= format_currency(data[i][__("Credit Card")]) %}</td>
-				<td style="font-size: 11px;">{%= format_currency(data[i][__("Total")]) %}</td>	
+				<td style="font-size: 10px;">{%= format_currency(data[i][__("Cash")]) %}</td>
+				<td style="font-size: 10px;">{%= format_currency(data[i][__("Cheque")]) %}</td>	
+				<td style="font-size: 10px;">{%= format_currency(data[i][__("Credit Card")]) %}</td>
+				<td style="font-size: 10px;">{%= format_currency(data[i][__("Total")]) %}</td>	
 			</tr>
 		{%  } %}
 	</tbody>
