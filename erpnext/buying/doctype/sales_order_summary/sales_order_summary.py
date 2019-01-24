@@ -27,6 +27,10 @@ def get_related_documents(doctype, docname):
 		filters = [[link.get('child_doctype', linked_doctype), link.get("fieldname"), '=', docname]]
 		if link.get("doctype_fieldname"):
 			filters.append([link.get('child_doctype'), link.get("doctype_fieldname"), "=", doctype])
+
+		if linked_doctype == "Payment Entry":
+			filters.append(["Payment Entry", "docstatus", "=", 1])
+
 		names = frappe.get_all(linked_doctype, fields="name", filters=filters, distinct=1)
 
 		for doc in names:
@@ -41,7 +45,7 @@ def get_related_documents(doctype, docname):
 	# include the Payment Entry against invoice
 	if si_list:
 		payment_entry = frappe.db.sql(
-			'''select parent as name from `tabPayment Entry Reference` where reference_name in (%s)''' %
+			'''select parent as name from `tabPayment Entry Reference` where docstatus=1 and reference_name in (%s)''' %
 			', '.join(['%s'] * len(si_list)), tuple(si_list), as_dict=1)
 		for pe in payment_entry:
 			pe_doc = frappe.get_doc("Payment Entry", pe.name).as_dict()

@@ -1,0 +1,52 @@
+{
+ "add_total_row": 1, 
+ "apply_user_permissions": 1, 
+ "creation": "2019-01-24 11:27:23.178992", 
+ "disabled": 0, 
+ "docstatus": 0, 
+ "doctype": "Report", 
+ "idx": 0, 
+ "is_standard": "Yes", 
+ "javascript": "frappe.query_reports[\"Cashier Out Report\"] = {\n    \"filters\": [\n        {\n            \"fieldname\":\"company\",\n            \"label\": __(\"Company\"),\n            \"fieldtype\": \"Link\",\t\n\t     \"options\":\"Company\",   \n\t\t\"default\":frappe.user_defaults.company,\t\t      \n\t\t\"reqd\": 1\n        },\n\t{\n            \"fieldname\":\"from_date\",\n            \"label\": __(\"From Date\"),\n            \"fieldtype\": \"Date\",\t\n\t     \"default\": get_today(), \n            \"reqd\": 1\n        },\n  \t{\n            \"fieldname\":\"to_date\",\n            \"label\": __(\"To Date\"),\n            \"fieldtype\": \"Date\",\n\t     \"default\": get_today(), \t   \n            \"reqd\": 1\n        },\n\t{\n            \"fieldname\":\"cashmod\",\n            \"label\": __(\"Cash\"),\n            \"fieldtype\": \"Link\",\n\t    \"options\": \"Mode of Payment\",\t     \n\t    \"reqd\": 1    ,\n\t\t  get_query: function(){\n       \t    return{filters : {'type': 'Cash' }}\n        \t}        \n        },\t\n\t{\n            \"fieldname\":\"creditmod\",\n            \"label\": __(\"Credit Card\"),\n            \"fieldtype\": \"Link\",\t\n\t    \"options\":\"Mode of Payment\",         \n\t    \"reqd\": 1,\n\t    get_query: function(){\n       \t    return{filters : {'type': 'Credit Card' }}\n        \t}       \n        },\n\t{\n            \"fieldname\":\"chequemod\",\n            \"label\": __(\"Cheque\"),\n            \"fieldtype\": \"Link\",\t\n\t    \"options\":\"Mode of Payment\",         \n\t    \"reqd\": 1,\n\t\t get_query: function(){\n       \t    return{filters : {'type': 'Bank' }}\n        \t}       \n        }\n    ]\n}", 
+ "modified": "2019-01-24 11:27:23.178992", 
+ "modified_by": "Administrator", 
+ "module": "Accounts", 
+ "name": "Cashier Out Report", 
+ "owner": "Administrator", 
+ "query": "select\n pe.name as \"Code:Link/Payment Entry:100\", \n pe.party_name as \"Party:Data:100\",\nifnull(GROUP_CONCAT(per.reference_name SEPARATOR ','),GROUP_CONCAT(ped.account SEPARATOR ',')) \"Reference:Data:200\",\n pe.remarks as \"Remarks:Data:100\",\n pe.paid_amount as \"Cash:Currency:100\",\n 0 as \"Credit Card:Currency:100\",\n 0 as \"Cheque:Currency:100\",\npe.paid_amount as \"Total:Currency:100\"\n\nfrom `tabPayment Entry` pe left join `tabPayment Entry Reference` per on pe.name=per.parent\nleft join `tabPayment Entry Deduction` ped on pe.name=ped.parent\nwhere pe.payment_type='Pay' and  \npe.company= %(company)s  \nand pe.docstatus=1 \nand pe.mode_of_payment = %(cashmod)s\nand pe.posting_date >= %(from_date)s\nand pe.posting_date <= %(to_date)s\ngroup by pe.name\n\nunion\n\nselect\n pe.name , \n pe.party_name , \nifnull(GROUP_CONCAT(per.reference_name SEPARATOR ','),GROUP_CONCAT(ped.account SEPARATOR ','))  ,\n pe.remarks ,\n0,\npe.paid_amount ,\n 0 ,\npe.paid_amount\n\nfrom `tabPayment Entry` pe left join `tabPayment Entry Reference` per on pe.name=per.parent\nleft join `tabPayment Entry Deduction` ped on pe.name=ped.parent\nwhere pe.payment_type='Pay' and  \npe.company= %(company)s  \nand pe.docstatus=1 \nand pe.mode_of_payment = %(creditmod)s\nand pe.posting_date >= %(from_date)s\nand pe.posting_date <= %(to_date)s\ngroup by pe.name\n\nunion\n\nselect\n pe.name , \n pe.party_name ,\nifnull(GROUP_CONCAT(per.reference_name SEPARATOR ','),GROUP_CONCAT(ped.account SEPARATOR ','))  ,\n pe.remarks ,\n 0,\n0,\npe.paid_amount ,\npe.paid_amount\n\nfrom `tabPayment Entry` pe left join `tabPayment Entry Reference` per on pe.name=per.parent\nleft join `tabPayment Entry Deduction` ped on pe.name=ped.parent\nwhere pe.payment_type='Pay' and  \npe.company= %(company)s  \nand pe.docstatus=1 \nand pe.mode_of_payment = %(chequemod)s\nand pe.posting_date >= %(from_date)s\nand pe.posting_date <= %(to_date)s\n\ngroup by pe.name\n\nunion\n-- internal Transfer\n\nselect\n pe.name ,  pe.paid_to , pe.remarks ,\n'' ,pe.paid_amount ,0, 0 ,\npe.paid_amount\n\nfrom `tabPayment Entry` pe \nwhere pe.payment_type='Internal Transfer' and  \npe.company= %(company)s  \nand pe.docstatus=1 \nand pe.paid_from in (select default_account from `tabMode of Payment Account` where parent = %(cashmod)s and company = %(company)s)\nand pe.posting_date >= %(from_date)s\nand pe.posting_date <= %(to_date)s\n\n\nunion\n\nselect\n pe.name ,  pe.paid_to ,  pe.remarks ,\n'' , 0, pe.paid_amount ,  0 ,\npe.paid_amount\n\nfrom `tabPayment Entry` pe\nwhere pe.payment_type='Internal Transfer' and  \npe.company= %(company)s  \nand pe.docstatus=1 \nand pe.paid_from in (select default_account from `tabMode of Payment Account` where parent = %(creditmod)s and company = %(company)s)\nand pe.posting_date >= %(from_date)s\nand pe.posting_date <= %(to_date)s\n\nunion\n\nselect\n pe.name ,  pe.paid_to , pe.remarks ,\n'' , 0, 0, pe.paid_amount , pe.paid_amount\n\nfrom `tabPayment Entry` pe \nwhere pe.payment_type='Internal Transfer' and  \npe.company= %(company)s  \nand pe.docstatus=1 \nand pe.paid_from in (select default_account from `tabMode of Payment Account` where parent = %(chequemod)s and company = %(company)s)\nand pe.posting_date >= %(from_date)s\nand pe.posting_date <= %(to_date)s\n\n-- GL Impact in Cash IN Report\nunion\n\nselect * from (select voucher_no,account,against,\nremarks,sum(ifnull(credit,0)) as amount,0 as '2' ,0 as '3' ,sum(ifnull(credit,0)) as total\nfrom `tabGL Entry` tge \nwhere voucher_type='Journal Entry' and docstatus=1 \nand account in (select default_account from `tabMode of Payment Account` where parent = %(cashmod)s and company = %(company)s)\nand posting_date >= %(from_date)s\nand posting_date <= %(to_date)s\nand credit>0\ngroup by voucher_no) tgle\n\nunion\n\n\nselect * from (select voucher_no,account,against,\nremarks,0 as '1' ,sum(ifnull(credit,0)) as amount,0 as '3' ,sum(ifnull(credit,0))  as total\nfrom `tabGL Entry` tge \nwhere voucher_type='Journal Entry' and docstatus=1 \nand account in (select default_account from `tabMode of Payment Account` where parent = %(creditmod)s and company = %(company)s)\nand posting_date >= %(from_date)s\nand posting_date <= %(to_date)s\nand credit>0\ngroup by voucher_no) tgle\n\nunion\n\nselect * from (select voucher_no,account,against,\nremarks,0 as '1' ,0 as '2' ,sum(ifnull(credit,0)) as amount,sum(ifnull(credit,0))  as total\nfrom `tabGL Entry` tge \nwhere voucher_type='Journal Entry' and docstatus=1 \nand account in (select default_account from `tabMode of Payment Account` where parent = %(chequemod)s and company = %(company)s)\nand posting_date >= %(from_date)s\nand posting_date <= %(to_date)s\nand credit>0\ngroup by voucher_no) tgle\n\n", 
+ "ref_doctype": "Payment Entry", 
+ "report_name": "Cashier Out Report", 
+ "report_type": "Query Report", 
+ "roles": [
+  {
+   "role": "Accounts User"
+  }, 
+  {
+   "role": "Accounts Manager"
+  }, 
+  {
+   "role": "Branch Manager TS"
+  }, 
+  {
+   "role": "Asst. Accountant TS"
+  }, 
+  {
+   "role": "Manager Accounts TS"
+  }, 
+  {
+   "role": "Cashier TS"
+  }, 
+  {
+   "role": "Reception TS"
+  }, 
+  {
+   "role": "Director TS"
+  }, 
+  {
+   "role": "Cashier HO TS"
+  }, 
+  {
+   "role": "Single Director TS"
+  }
+ ]
+}
