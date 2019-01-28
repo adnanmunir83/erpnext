@@ -33,7 +33,25 @@ frappe.query_reports["Unbilled Customer Orders"] = {
 			"label": __("Customer"),
 			"fieldtype": "Link",
 			"options": "Customer",
-			"reqd": 1
+			"reqd": 1,
+			on_change: function(query_report) {
+				let customer = query_report.get_values().customer;
+				if(customer) {
+					frappe.db.get_value('Customer', customer, "customer_name", function(value) {
+						frappe.query_report_filters_by_name.customer_name.set_input(value.customer_name);
+						query_report.trigger_refresh();
+					});
+				} else {
+					frappe.query_report_filters_by_name.customer_name.set_input("");
+					query_report.trigger_refresh();
+				}
+			}
+		},
+		{
+			"fieldname":"customer_name",
+			"label": __("Customer Name"),
+			"fieldtype": "Data",
+			"read_only": 1
 		}
 	]
 }
