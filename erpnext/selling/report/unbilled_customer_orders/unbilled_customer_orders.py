@@ -117,12 +117,15 @@ class UnbilledCustomerOrdersReport(object):
 	def get_gl_entries(self):
 		self.gl_entries = frappe.db.sql("""
 			select
-				posting_date, voucher_type, voucher_no, against_voucher_type, against_voucher, debit, credit
+				posting_date, voucher_type, voucher_no, sum(debit) as debit, sum(credit) as credit,
+				GROUP_CONCAT(DISTINCT against_voucher_type SEPARATOR ', ') as against_voucher_type,
+				GROUP_CONCAT(DISTINCT against_voucher SEPARATOR ', ') as against_voucher
 			from
 				`tabGL Entry`
 			where
 				docstatus < 2 and party_type='Customer' and party = %(customer)s and posting_date <= %(to_date)s
 				and company = %(company)s
+			group by voucher_type, voucher_no
 			order by posting_date""", self.filters, as_dict=True)
 
 	def get_unbilled_orders(self):
