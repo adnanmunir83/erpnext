@@ -141,7 +141,8 @@ class UnbilledCustomerOrdersReport(object):
 				where item.parent = si.name and item.sales_order = so.name
 			)
 			where
-				so.docstatus = 1 and so.status != 'Closed' and so.customer=%(customer)s and so.company=%(company)s
+				so.docstatus = 1 and so.status != 'Closed' and per_billed<100
+				and so.customer=%(customer)s and so.company=%(company)s
 			group by so.name
 			having debit-credit > 0
 			order by transaction_date
