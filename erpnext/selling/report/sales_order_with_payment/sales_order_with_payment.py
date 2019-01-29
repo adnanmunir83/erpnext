@@ -33,6 +33,7 @@ def execute(filters=None):
 		from `tabSales Order` so
 		inner join `tabUser` usr on usr.name=so.owner
 		where so.transaction_date between %(fdate)s and %(tdate)s
+		and so.company = %(company)s and so.docstatus=1
 		order by so.transaction_date desc
 	""", filters, as_dict=1)
 
@@ -49,6 +50,8 @@ def execute(filters=None):
 				where gle.against_voucher=item.parent and so.name=item.sales_order
 			)))
 		where voucher_no != against_voucher and so.transaction_date between %(fdate)s and %(tdate)s
+		and so.company = %(company)s and so.docstatus=1
+
 	""", filters, as_dict=1)
 	order_gle = {}
 	for gle in gl_entries:

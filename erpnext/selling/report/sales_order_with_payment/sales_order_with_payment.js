@@ -5,6 +5,13 @@
 frappe.query_reports["Sales Order With Payment"] = {
 	"filters": [
         {
+            "fieldname":"company",
+            "label": __("Company"),
+            "fieldtype": "Link",
+            "options": "Company",
+            "reqd": 1
+        } ,
+        {
             "fieldname":"fdate",
             "label": __("From Date"),
             "fieldtype": "Date",
