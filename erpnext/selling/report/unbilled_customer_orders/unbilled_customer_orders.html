@@ -1,0 +1,40 @@
+<h2 class="text-center">{%= __("Customer Ledger") %}</h2>
+<h4 class="text-center">
+	{% if (filters.company) { %}
+		{%= filters.compnay %}	
+	{% } %}
+</h4>
+<h5 class="text-center">
+    {%= filters.cost_center %}	<br>
+	{%= dateutil.str_to_user(filters.from_date) %}
+	{%= __("  TO ") %}
+	{%= dateutil.str_to_user(filters.to_date) %}
+	<br>	
+		{%= filters.customer_name %} {%= filters.customer %} 
+</h5>
+<hr>
+<table class="table table-bordered">
+	<thead>
+		<tr>
+			<th style="width: 4%">{%= __("Date") %}</th>
+			<th style="width: 8%">{%= __("Voucher") %}</th>
+			<th style="width: 31%">{%= __("Against Voucher") %}</th>
+			<th style="width: 44%">{%= __("Debit") %}</th>
+			<th style="width: 3%">{%= __("Credit") %}</th>
+			<th style="width: 3%">{%= __("Balance") %}</th>			
+		</tr>
+	</thead>
+	<tbody>
+		{%  for(var i=0, l=data.length; i<l; i++) { %}
+			<tr>			
+				<td style="font-size: 9px;">{%= data[i][__("Date")] %}</td>
+				<td style="font-size: 9px;">{%= data[i][__("Voucher")] %}</td>
+				<td style="font-size: 9px;">{%= data[i][__("Against Voucher")] %}</td>				
+				<td style="font-size: 10px;">{%= format_currency(data[i][__("Debit")]) %}</td>
+				<td style="font-size: 10px;">{%= format_currency(data[i][__("Credit")]) %}</td>	
+				<td style="font-size: 10px;">{%= format_currency(data[i][__("Balance")]) %}</td>				
+			</tr>
+		{%  } %}
+	</tbody>
+</table>
+<p class="text-right text-muted">Printed On {%= dateutil.str_to_user(dateutil.get_datetime_as_string()) %}</p>
