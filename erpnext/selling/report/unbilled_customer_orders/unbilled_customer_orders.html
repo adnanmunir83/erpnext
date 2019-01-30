@@ -16,23 +16,25 @@
 <table class="table table-bordered">
 	<thead>
 		<tr>
-			<th style="width: 4%">{%= __("Date") %}</th>
-			<th style="width: 8%">{%= __("Voucher") %}</th>
-			<th style="width: 31%">{%= __("Against Voucher") %}</th>
-			<th style="width: 44%">{%= __("Debit") %}</th>
-			<th style="width: 3%">{%= __("Credit") %}</th>
-			<th style="width: 3%">{%= __("Balance") %}</th>			
+			<th>{%= __("Date") %}</th>
+			<th>{%= __("Voucher Type") %}</th>
+			<th>{%= __("Voucher") %}</th>
+			<th>{%= __("Against Voucher") %}</th>
+			<th>{%= __("Debit") %}</th>
+			<th>{%= __("Credit") %}</th>
+			<th>{%= __("Balance") %}</th>			
 		</tr>
 	</thead>
 	<tbody>
 		{%  for(var i=0, l=data.length; i<l; i++) { %}
 			<tr>			
-				<td style="font-size: 9px;">{%= data[i][__("Date")] %}</td>
-				<td style="font-size: 9px;">{%= data[i][__("Voucher")] %}</td>
-				<td style="font-size: 9px;">{%= data[i][__("Against Voucher")] %}</td>				
-				<td style="font-size: 10px;">{%= format_currency(data[i][__("Debit")]) %}</td>
-				<td style="font-size: 10px;">{%= format_currency(data[i][__("Credit")]) %}</td>	
-				<td style="font-size: 10px;">{%= format_currency(data[i][__("Balance")]) %}</td>				
+				<td >{%= data[i].posting_date %}</td>
+				<td >{%= data[i].voucher_type %}</td>
+				<td >{%= data[i].voucher_no %}</td>
+				<td >{%= data[i].against_voucher %}</td>				
+				<td >{%= format_currency(data[i].debit) %}</td>
+				<td >{%= format_currency(data[i].credit) %}</td>	
+				<td >{%= format_currency(data[i].balance) %}</td>				
 			</tr>
 		{%  } %}
 	</tbody>
