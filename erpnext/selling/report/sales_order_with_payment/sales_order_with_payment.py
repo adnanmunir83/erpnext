@@ -43,15 +43,23 @@ def execute(filters=None):
 			gle.against_voucher, gle.credit-gle.debit as amount
 		from `tabGL Entry` gle
 		inner join `tabSales Order` so
-			on ((gle.against_voucher_type='Sales Order' and gle.against_voucher=so.name)
-			or (gle.against_voucher_type='Sales Invoice' and exists(
-				select item.name
-				from `tabSales Invoice Item` item
-				where gle.against_voucher=item.parent and so.name=item.sales_order
-			)))
+			on (gle.against_voucher_type='Sales Order' and gle.against_voucher=so.name)			
 		where voucher_no != against_voucher and so.transaction_date between %(fdate)s and %(tdate)s
 		and so.company = %(company)s and so.docstatus=1
 
+		union
+
+		select
+			so.name as sales_order, gle.voucher_type, gle.against_voucher_type,
+			gle.against_voucher, gle.credit-gle.debit as amount
+		from `tabGL Entry` gle
+		inner join `tabSales Order` so
+			on ((gle.against_voucher_type='Sales Invoice') 
+             and gle.against_voucher in 
+			 (select distinct si.parent from `tabSales Invoice Item` si where si.sales_order=so.name )           
+          )
+		where voucher_no != against_voucher  and so.transaction_date between %(fdate)s and %(tdate)s
+		and so.company = %(company)s and so.docstatus=1
 	""", filters, as_dict=1)
 	order_gle = {}
 	for gle in gl_entries:
