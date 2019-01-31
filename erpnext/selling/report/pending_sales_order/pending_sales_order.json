@@ -1,0 +1,92 @@
+{
+ "add_total_row": 0, 
+ "apply_user_permissions": 1, 
+ "creation": "2019-01-31 09:28:27.689503", 
+ "disabled": 0, 
+ "docstatus": 0, 
+ "doctype": "Report", 
+ "idx": 0, 
+ "is_standard": "Yes", 
+ "modified": "2019-01-31 09:28:27.689503", 
+ "modified_by": "Administrator", 
+ "module": "Selling", 
+ "name": "Pending Sales Order", 
+ "owner": "Administrator", 
+ "ref_doctype": "Sales Order", 
+ "report_name": "Pending Sales Order", 
+ "report_type": "Script Report", 
+ "roles": [
+  {
+   "role": "Maintenance User"
+  }, 
+  {
+   "role": "Sales User"
+  }, 
+  {
+   "role": "Accounts User"
+  }, 
+  {
+   "role": "Sales Manager"
+  }, 
+  {
+   "role": "Stock User"
+  }, 
+  {
+   "role": "Salesman TS"
+  }, 
+  {
+   "role": "Branch Manager TS"
+  }, 
+  {
+   "role": "Warehouse Incharge TS"
+  }, 
+  {
+   "role": "Delivery Officer TS"
+  }, 
+  {
+   "role": "Sales Manager TS"
+  }, 
+  {
+   "role": "Sales Director TS"
+  }, 
+  {
+   "role": "Asst. Accountant TS"
+  }, 
+  {
+   "role": "Manager Accounts TS"
+  }, 
+  {
+   "role": "Cashier TS"
+  }, 
+  {
+   "role": "Marketing Manager TS"
+  }, 
+  {
+   "role": "Reception TS"
+  }, 
+  {
+   "role": "Director TS"
+  }, 
+  {
+   "role": "Delivery Manager TS"
+  }, 
+  {
+   "role": "Cashier HO TS"
+  }, 
+  {
+   "role": "Single Director TS"
+  }, 
+  {
+   "role": "Auditor"
+  }, 
+  {
+   "role": "Return Officer TS"
+  }, 
+  {
+   "role": "Display Incharge TS"
+  }, 
+  {
+   "role": "Purchase Manager TS"
+  }
+ ]
+}
