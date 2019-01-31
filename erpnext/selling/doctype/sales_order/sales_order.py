@@ -29,6 +29,7 @@ class SalesOrder(SellingController):
 	def validate(self):
 		super(SalesOrder, self).validate()
 
+		self.validate_date()
 		self.validate_order_type()
 		self.validate_delivery_date()
 		self.validate_proj_cust()
@@ -386,6 +387,12 @@ class SalesOrder(SellingController):
 
 			d.set("delivery_date", get_next_schedule_date(reference_delivery_date,
 				subscription_doc.frequency, cint(subscription_doc.repeat_on_day)))
+
+	def validate_date(self):
+		if self.set_posting_date:
+			return
+		self.transaction_date = frappe.utils.data.nowdate()
+			
 
 def get_list_context(context=None):
 	from erpnext.controllers.website_list_for_contact import get_list_context
