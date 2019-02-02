@@ -41,6 +41,7 @@ class PaymentEntry(AccountsController):
 			self.party_account_currency = self.paid_to_account_currency
 
 	def validate(self):
+		self.validate_date()
 		self.setup_party_account_field()
 		self.set_missing_values()
 		self.validate_payment_type()

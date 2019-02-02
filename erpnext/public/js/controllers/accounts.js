@@ -384,18 +384,19 @@ frappe.custom_mutli_add_dialog = function(frm) {
 			<tr>
 				<th style="width: 90px" rowspan="2">Item Name</th>
 				<th style="width: 360px" rowspan="2">Details</th>
+				<th style="width: 80px" >Avail. Qty</th>
 				<th style="width: 180px" colspan="3">Present Qty</th>
 				<th style="width: 180px" colspan="3">Reserved Qty</th>
-				<th style="width: 80px" >Avail. Qty</th>
+				
 			</tr>
 			<tr>
 				<th>SQM</th>
-				<th>Boxes</th>
-				<th>Pieces</th>
 				<th>SQM</th>
 				<th>Boxes</th>
 				<th>Pieces</th>
 				<th>SQM</th>
+				<th>Boxes</th>
+				<th>Pieces</th>				
 			</tr>
 		</thead>
 		<tbody>
@@ -410,20 +411,20 @@ frappe.custom_mutli_add_dialog = function(frm) {
 	const custom_warehousewise_template1 = `
 		<table class="table table-bordered table-hover table-condensed custom-warehouse-detail-tool">
 			<thead>
-				<tr>
+				<tr>				
 					<th style="width: 280px" rowspan="2">Warehouse Name</th>
-					<th style="width: 210px" colspan="3">Present Qty</th>
-					<th style="width: 210px" colspan="3">Reserved Qty</th>
 					<th style="width: 90px" >Avail. Qty</th>
+					<th style="width: 210px" colspan="3">Present Qty</th>
+					<th style="width: 210px" colspan="3">Reserved Qty</th>					
 				</tr>
 				<tr>
 					<th>SQM</th>
-					<th>Boxes</th>
-					<th>Pieces</th>
 					<th>SQM</th>
 					<th>Boxes</th>
 					<th>Pieces</th>
 					<th>SQM</th>
+					<th>Boxes</th>
+					<th>Pieces</th>					
 				</tr>
 			</thead>
 			<tbody>
@@ -558,13 +559,13 @@ frappe.custom_mutli_add_dialog = function(frm) {
 					<tr data-item=${item} class="custom-item-row">
 						<td>${item}</td>
 						<td>${item_details[item]["item_details"]}</td>
+						<td><b>${flt(actual_qty_sqm-reserved_qty_sqm, 3)}</b></td>
 						<td>${flt(actual_qty_sqm, 3)}</td>
 						<td>${flt(actual_qty_box, 3) || 0}</td>
 						<td>${flt(actual_qty_pieces, 3) || 0}</td>
 						<td>${flt(reserved_qty_sqm, 3)}</td>
 						<td>${flt(reserved_qty_box, 3) || 0}</td>
-						<td>${flt(reserved_qty_pieces, 3) || 0}</td>
-						<td><b>${flt(actual_qty_sqm-reserved_qty_sqm, 3)}</b></td>
+						<td>${flt(reserved_qty_pieces, 3) || 0}</td>						
 					</tr>`;
 			}
 
@@ -594,13 +595,14 @@ frappe.custom_mutli_add_dialog = function(frm) {
 					customWarehouseDetailsTemplate += `
 					<tr data-item=${warehouse} class="custom-item-row">
 						<td>${warehouse}</td>
+						<td><b>${flt(actual_qty_sqm-reserved_qty_sqm, 3)}</b></td>
 						<td>${flt(actual_qty_sqm, 3)}</td>
 						<td>${flt(actual_qty_box, 3) || 0}</td>
 						<td>${flt(actual_qty_pieces, 3) || 0}</td>
 						<td>${flt(reserved_qty_sqm, 3)}</td>
 						<td>${flt(reserved_qty_box, 3) || 0}</td>
 						<td>${flt(reserved_qty_pieces, 3) || 0}</td>
-						<td><b>${flt(actual_qty_sqm-reserved_qty_sqm, 3)}</b></td>
+						
 					</tr>
 					`;
 					// console.log(warehouse);

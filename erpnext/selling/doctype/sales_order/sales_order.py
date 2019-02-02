@@ -386,13 +386,7 @@ class SalesOrder(SellingController):
 				{"parent": reference_doc.name, "item_code": d.item_code, "idx": d.idx}, "delivery_date")
 
 			d.set("delivery_date", get_next_schedule_date(reference_delivery_date,
-				subscription_doc.frequency, cint(subscription_doc.repeat_on_day)))
-
-	def validate_date(self):
-		if self.set_posting_date:
-			return
-		self.transaction_date = frappe.utils.data.nowdate()
-			
+				subscription_doc.frequency, cint(subscription_doc.repeat_on_day)))			
 
 def get_list_context(context=None):
 	from erpnext.controllers.website_list_for_contact import get_list_context

@@ -750,6 +750,11 @@ class AccountsController(TransactionBase):
 			return self.disable_rounded_total
 		else:
 			return frappe.db.get_single_value("Global Defaults", "disable_rounded_total")
+	
+	def validate_date(self):
+		if not self.get("set_posting_time"):			
+			self.posting_date = frappe.utils.data.today()
+			#self.posting_time = frappe.utils.data.nowtime()
 
 @frappe.whitelist()
 def get_tax_rate(account_head):

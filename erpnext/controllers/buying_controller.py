@@ -472,6 +472,14 @@ class BuyingController(StockController):
 			validate_item_type(self, "is_sub_contracted_item", "subcontracted")
 		else:
 			validate_item_type(self, "is_purchase_item", "purchase")
+	
+	def validate_date(self):
+		if not self.get("set_posting_time"):
+			if self.doctype in ("Purchase Order"):
+				self.transaction_date = frappe.utils.data.today()
+			else : 
+				self.posting_date = frappe.utils.data.today()
+				self.posting_time = frappe.utils.data.nowtime()
 
 def validate_item_type(doc, fieldname, message):
 	# iterate through items and check if they are valid sales or purchase items

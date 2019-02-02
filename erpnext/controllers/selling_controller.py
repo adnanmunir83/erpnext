@@ -349,6 +349,14 @@ class SellingController(StockController):
 		from erpnext.controllers.buying_controller import validate_item_type
 		validate_item_type(self, "is_sales_item", "sales")
 
+	def validate_date(self):
+		if not self.get("set_posting_time"):
+			if self.doctype in ("Sales Order"):
+				self.transaction_date = frappe.utils.data.today()
+			else : 
+				self.posting_date = frappe.utils.data.today()
+				self.posting_time = frappe.utils.data.nowtime()
+
 def check_active_sales_items(obj):
 	for d in obj.get("items"):
 		if d.item_code:

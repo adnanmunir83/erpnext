@@ -23,6 +23,7 @@ class StockReconciliation(StockController):
 			self.expense_account = frappe.db.get_value("Company", self.company, "stock_adjustment_account")
 		if not self.cost_center:
 			self.cost_center = frappe.db.get_value("Company", self.company, "cost_center")
+		self.validate_date()
 		self.validate_posting_time()
 		self.remove_items_with_no_change()
 		self.validate_data()

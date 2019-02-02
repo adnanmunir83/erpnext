@@ -37,6 +37,8 @@ class StockEntry(StockController):
 		self.pro_doc = frappe._dict()
 		if self.production_order:
 			self.pro_doc = frappe.get_doc('Production Order', self.production_order)
+		
+		self.validate_date()
 
 		self.validate_posting_time()
 		self.validate_purpose()

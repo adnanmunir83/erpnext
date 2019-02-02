@@ -45,11 +45,12 @@ def get_related_documents(doctype, docname):
 	# include the Payment Entry against invoice
 	if si_list:
 		payment_entry = frappe.db.sql(
-			'''select parent as name from `tabPayment Entry Reference` where docstatus=1 and reference_name in (%s)''' %
+			'''select distinct parent as name from `tabPayment Entry Reference` where docstatus=1 and reference_name in (%s)''' %
 			', '.join(['%s'] * len(si_list)), tuple(si_list), as_dict=1)
 		for pe in payment_entry:
-			pe_doc = frappe.get_doc("Payment Entry", pe.name).as_dict()
-			document_details["Payment Entry"].append(pe_doc)
+			if pe.name not in document_details["Payment Entry"]:
+				pe_doc = frappe.get_doc("Payment Entry", pe.name).as_dict()
+				document_details["Payment Entry"].append(pe_doc)
 
 	return document_details
 

@@ -55,6 +55,7 @@ class PurchaseReceipt(BuyingController):
 		else:
 			self.set_status()
 
+		self.validate_date()
 		self.po_required()
 		self.validate_with_previous_doc()
 		self.validate_uom_is_integer("uom", ["qty", "received_qty"])

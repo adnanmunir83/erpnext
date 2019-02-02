@@ -332,6 +332,11 @@ class StockController(AccountsController):
 				if self.docstatus==1:
 					raise frappe.ValidationError
 
+	def validate_date(self):
+		if not self.get("set_posting_time"):
+			self.posting_date = frappe.utils.data.today()
+			self.posting_time = frappe.utils.data.nowtime()
+			
 def update_gl_entries_after(posting_date, posting_time, for_warehouses=None, for_items=None,
 		warehouse_account=None):
 	def _delete_gl_entries(voucher_type, voucher_no):

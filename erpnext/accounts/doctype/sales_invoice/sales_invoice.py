@@ -62,6 +62,7 @@ class SalesInvoice(SellingController):
 			self.so_dn_required()
 
 		self.set_missing_so_detail()
+		self.validate_date()
 
 		self.validate_proj_cust()
 		self.validate_with_previous_doc()

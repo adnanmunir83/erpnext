@@ -41,10 +41,13 @@ class PurchaseInvoice(BuyingController):
 	def validate(self):
 		if not self.is_opening:
 			self.is_opening = 'No'
+		
+		self.validate_date()
 
 		self.validate_posting_time()
 		super(PurchaseInvoice, self).validate()
-
+		
+				
 		if not self.is_return:
 			self.po_required()
 			self.pr_required()
