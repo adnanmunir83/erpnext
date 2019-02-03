@@ -2,6 +2,7 @@
 // License: GNU General Public License v3. See license.txt
 
 frappe.provide("erpnext.stock");
+{% include "erpnext/public/js/controllers/accounts.js" %}
 
 frappe.ui.form.on("Stock Reconciliation", {
 	onload: function(frm) {
