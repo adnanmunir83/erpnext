@@ -41,6 +41,11 @@ erpnext.accounts.SalesInvoiceController = erpnext.selling.SellingController.exte
 		}
 	},
 
+	validate:function(doc, dt, dn) {
+		
+		this.update_item_qty_based_on_sales_order(this.frm);
+	},
+
 	refresh: function(doc, dt, dn) {
 		this._super();
 		if(cur_frm.msgbox && cur_frm.msgbox.$wrapper.is(":visible")) {

@@ -120,7 +120,7 @@ def custom_item_query(doctype, txt, searchfield, start, page_len, filters, as_di
 				or tabItem.item_name LIKE %(txt)s
 				or tabItem.barcode LIKE %(txt)s)
 			{fcond} {mcond}
-		group by tabBin.item_code
+		group by tabItem.name
 		order by
 			sum(ifnull(tabBin.actual_qty - tabBin.reserved_qty, 0)) desc,
 			if(locate(%(_txt)s, tabItem.name), locate(%(_txt)s, tabItem.name), 99999),
