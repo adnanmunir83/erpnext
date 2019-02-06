@@ -148,7 +148,8 @@ erpnext.accounts.SalesInvoiceController = erpnext.selling.SellingController.exte
 				item_code: d.item_code,
 				sales_order: d.sales_order,
 				so_detail: d.so_detail,
-				parent: frm.doc.name
+				parent: frm.doc.name,
+				qty:d.qty
 			});
 		});
 

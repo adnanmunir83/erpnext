@@ -1162,7 +1162,8 @@ def update_item_qty_based_on_sales_order(items):
 				invoiced_qty = flt(invoiced_qty)
 
 				remaining_qty = max(0, so_item.qty - invoiced_qty)
-				row['qty'] = remaining_qty
+				if remaining_qty< flt(item.qty):
+					row['qty'] = remaining_qty
 
 			out[item.name] = row
 			items_codes_visited.add(item.item_code)
