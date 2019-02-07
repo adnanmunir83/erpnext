@@ -59,7 +59,7 @@ def execute(filters=None):
 		where voucher_no != against_voucher and so.transaction_date between %(fdate)s and %(tdate)s
 		and so.company = %(company)s and so.docstatus=1 and so.status not in ('Closed') {0}
 
-		union
+		union all
 
 		select
 			so.name as sales_order, gle.voucher_type, gle.against_voucher_type,

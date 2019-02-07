@@ -38,6 +38,7 @@ def execute(filters=None):
 	""", filters, as_dict=1)
 
  	gl_entries = frappe.db.sql("""
+		select * from (
 		select
 			so.name as sales_order, gle.voucher_type, gle.against_voucher_type,
 			gle.against_voucher, gle.credit-gle.debit as amount
@@ -47,7 +48,7 @@ def execute(filters=None):
 		where voucher_no != against_voucher and so.transaction_date between %(fdate)s and %(tdate)s
 		and so.company = %(company)s and so.docstatus=1
 
-		union
+		union all
 
 		select
 			so.name as sales_order, gle.voucher_type, gle.against_voucher_type,
@@ -60,6 +61,7 @@ def execute(filters=None):
           )
 		where voucher_no != against_voucher  and so.transaction_date between %(fdate)s and %(tdate)s
 		and so.company = %(company)s and so.docstatus=1
+		) tabglentry order by sales_order
 	""", filters, as_dict=1)
 	order_gle = {}
 	for gle in gl_entries:
