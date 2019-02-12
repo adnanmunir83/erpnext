@@ -211,7 +211,7 @@ def filter_items_with_no_transactions(iwb_map):
 				no_transactions = False
 		
 		if no_transactions:
-			iwb_map.pop((company, item))
+			iwb_map.pop((company, item, warehouse))
 
 	return iwb_map
 
