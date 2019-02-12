@@ -21,6 +21,26 @@ def execute(filters=None):
 		return columns, []
 
 	iwb_map = get_item_warehouse_map(filters, sle)
+	dataitems = {}
+	for (company,item, warehouse) in sorted(iwb_map):	
+		warehouse_item = iwb_map[(company,item, warehouse)]
+		key = (company,item)
+		if key not in dataitems:
+			dataitems[key] = frappe._dict({
+				"opening_qty": 0.0, 
+				"in_qty": 0.0,
+				"out_qty": 0.0,
+				"bal_qty": 0.0, 
+				"val_rate": 0.0
+			})
+		dataitems[key].opening_qty += warehouse_item.opening_qty		
+		dataitems[key].in_qty += warehouse_item.in_qty		
+		dataitems[key].out_qty += warehouse_item.out_qty		
+		dataitems[key].bal_qty += warehouse_item.bal_qty
+		dataitems[key].val_rate += warehouse_item.val_rate
+		
+	iwb_map = dataitems
+
 	item_map = get_item_details(items, sle, filters)
 	reserved_stock = get_company_reserved_stock(filters)
 
@@ -28,7 +48,6 @@ def execute(filters=None):
 	for (company,item) in sorted(iwb_map):
 		if item_map.get(item):			
 			qty_dict = iwb_map[(company,item)]
-
 
 			availble_qty = (qty_dict.bal_qty - reserved_stock[item]["reserved_qty"])
 			
@@ -140,7 +159,7 @@ def get_item_warehouse_map(filters, sle):
 	to_date = getdate(filters.get("to_date"))
 
 	for d in sle:
-		key = (d.company, d.item_code)
+		key = (d.company, d.item_code, d.warehouse)
 		if key not in iwb_map:
 			iwb_map[key] = frappe._dict({
 				"opening_qty": 0.0, "opening_val": 0.0,
@@ -150,7 +169,7 @@ def get_item_warehouse_map(filters, sle):
 				"val_rate": 0.0
 			})
 
-		qty_dict = iwb_map[(d.company, d.item_code)]
+		qty_dict = iwb_map[(d.company, d.item_code, d.warehouse)]
 
 		if d.voucher_type == "Stock Reconciliation":
 			qty_diff = flt(d.qty_after_transaction) - qty_dict.bal_qty
@@ -180,8 +199,8 @@ def get_item_warehouse_map(filters, sle):
 	return iwb_map
 	
 def filter_items_with_no_transactions(iwb_map):
-	for (company, item) in sorted(iwb_map):
-		qty_dict = iwb_map[(company, item)]
+	for (company, item, warehouse) in sorted(iwb_map):
+		qty_dict = iwb_map[(company, item, warehouse)]
 		
 		no_transactions = True
 		float_precision = cint(frappe.db.get_default("float_precision")) or 3
@@ -221,8 +240,6 @@ def get_company_reserved_stock(filters):
 	order_reserved_items = {}
 	for ritems in reserved_items:
 		order_reserved_items.setdefault(ritems.item_code, ritems)
-	#	order_reserved_items[ritems.item_code].append(ritems)
-	#reserved_items.setdefault(item.name, item)
 	return order_reserved_items
 
 def get_item_details(items, sle, filters):
