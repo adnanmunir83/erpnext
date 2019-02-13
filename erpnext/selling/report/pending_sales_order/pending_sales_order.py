@@ -31,6 +31,8 @@ def execute(filters=None):
 		{"fieldname": "per_delivered", "label": "Delivered", "fieldtype": "Percent", "width": 100},
 		{"fieldname": "per_billed", "label": "Billed Percent", "fieldtype": "Percent", "width": 100},
 		{"fieldname": "owner", "label": "Owner", "fieldtype": "Link", "options": "User", "width": 100},
+		{"fieldname": "allow_delivery", "label": "Allow Delivery", "fieldtype": "Check", "width": 100},
+		{"fieldname": "delivery_approval_comments", "label": "Delivery Comments", "fieldtype": "Data", "width": 150},
 		{"fieldname": "company", "label": "Company", "fieldtype": "Link", "options": "Company", "width": 100}
 	]
 
@@ -38,7 +40,7 @@ def execute(filters=None):
 		select
 			so.name as sales_order, usr.full_name as salesman, so.customer, so.customer_name, so.transaction_date,
 			so.status, so.delivery_status, so.billing_status, so.per_delivered, so.per_billed, so.owner, so.company,
-			so.rounded_total, so.grand_total
+			so.rounded_total, so.grand_total, so.allow_delivery, so.delivery_approval_comments
 		from `tabSales Order` so
 		inner join `tabUser` usr on usr.name=so.owner
 		where so.transaction_date between %(fdate)s and %(tdate)s
