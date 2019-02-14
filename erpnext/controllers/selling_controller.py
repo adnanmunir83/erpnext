@@ -264,7 +264,7 @@ class SellingController(StockController):
 			if d.so_detail:
 				if self.doctype == "Delivery Note" and d.against_sales_order:
 					so_map.setdefault(d.against_sales_order, []).append(d.so_detail)
-				elif self.doctype == "Sales Invoice" and d.sales_order and self.update_stock:
+				elif self.doctype == "Sales Invoice" and d.sales_order :
 					so_map.setdefault(d.sales_order, []).append(d.so_detail)
 
 		for so, so_item_rows in so_map.items():
