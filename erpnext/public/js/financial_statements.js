@@ -66,8 +66,7 @@ function get_filters(){
 			"fieldname":"company",
 			"label": __("Company"),
 			"fieldtype": "Link",
-			"options": "Company",
-			"default": frappe.defaults.get_user_default("Company"),
+			"options": "Company",			
 			"reqd": 1
 		},
 		{
