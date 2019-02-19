@@ -137,6 +137,8 @@ class SalesInvoice(SellingController):
 		# because updating reserved qty in bin depends upon updated delivered qty in SO
 		if self.update_stock == 1:
 			self.update_stock_ledger()
+		else:
+			self.update_reserved_qty()
 
 		# this sequence because outstanding may get -ve
 		self.make_gl_entries()
@@ -187,6 +189,8 @@ class SalesInvoice(SellingController):
 		# because updating reserved qty in bin depends upon updated delivered qty in SO
 		if self.update_stock == 1:
 			self.update_stock_ledger()
+		else:
+			self.update_reserved_qty()
 
 		self.make_gl_entries_on_cancel()
 		frappe.db.set(self, 'status', 'Cancelled')

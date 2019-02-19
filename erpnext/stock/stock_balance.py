@@ -66,45 +66,22 @@ def get_balance_qty_from_sle(item_code, warehouse):
 
 def get_reserved_qty(item_code, warehouse):
 	reserved_qty = frappe.db.sql("""
-		select
-			sum(dnpi_qty * ((so_item_qty - so_item_delivered_qty) / so_item_qty))
-		from
-			(
-				(select
-					qty as dnpi_qty,
-					(
-						select qty from `tabSales Order Item`
-						where name = dnpi.parent_detail_docname
-						and (delivered_by_supplier is null or delivered_by_supplier = 0)
-					) as so_item_qty,
-					(
-						select delivered_qty from `tabSales Order Item`
-						where name = dnpi.parent_detail_docname
-						and delivered_by_supplier = 0
-					) as so_item_delivered_qty,
-					parent, name
-				from
-				(
-					select qty, parent_detail_docname, parent, name
-					from `tabPacked Item` dnpi_in
-					where item_code = %s and warehouse = %s
-					and parenttype="Sales Order"
-					and item_code != parent_item
-					and exists (select * from `tabSales Order` so
-					where name = dnpi_in.parent and docstatus = 1 and status != 'Closed')
-				) dnpi)
-			union
-				(select stock_qty as dnpi_qty, qty as so_item_qty,
-					delivered_qty as so_item_delivered_qty, parent, name
-				from `tabSales Order Item` so_item
-				where item_code = %s and warehouse = %s
-				and (so_item.delivered_by_supplier is null or so_item.delivered_by_supplier = 0)
-				and exists(select * from `tabSales Order` so
-					where so.name = so_item.parent and so.docstatus = 1
-					and so.status != 'Closed'))
-			) tab
-		where
-			so_item_qty >= so_item_delivered_qty
+		select (reserved_qty-ifnull(deliverd_qty,0))reservedqty from ( 
+		select sum(soi.qty) reserved_qty,soi.item_code ,soi.warehouse from `tabSales Order` so inner join `tabSales Order Item` soi 
+		on so.name=soi.parent 
+		where so.docstatus=1 and so.status not in ('Closed') and soi.item_code= %s
+		and so.company in (select company from tabWarehouse where name= %s )
+		group by item_code ) so
+
+		left join
+
+		(select sum(sii.qty) deliverd_qty, sii.item_code from `tabSales Invoice` si inner join `tabSales Invoice Item` sii 
+		on si.name=sii.parent
+		where si.is_return=0 and si.docstatus=1 and sii.item_code= %s 
+		and si.company in (select company from tabWarehouse where name= %s)
+		and sii.sales_order not in (select name from `tabSales Order` where docstatus=1 and status in ('Closed'))
+		group by item_code ) si 
+		on so.item_code=si.item_code
 	""", (item_code, warehouse, item_code, warehouse))
 
 	return flt(reserved_qty[0][0]) if reserved_qty else 0
