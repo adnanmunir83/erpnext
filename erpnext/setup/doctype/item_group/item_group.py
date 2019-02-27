@@ -102,7 +102,7 @@ def get_product_list_for_group(product_group=None, start=0, limit=10, search=Non
 				or I.name like %(search)s)"""
 		search = "%" + cstr(search) + "%"
 
-	query += """order by I.weightage desc, in_stock desc, I.item_name limit %s, %s""" % (start, limit)
+	query += """order by I.weightage desc, in_stock desc, I.modified desc limit %s, %s""" % (start, limit)
 
 	data = frappe.db.sql(query, {"product_group": product_group,"search": search, "today": nowdate()}, as_dict=1)
 
@@ -137,6 +137,9 @@ def get_item_for_list_in_html(context):
 	# user may forget it during upload
 	if (context.get("website_image") or "").startswith("files/"):
 		context["website_image"] = "/" + urllib.quote(context["website_image"])
+
+	context["show_availability_status"] = cint(frappe.db.get_single_value('Products Settings',
+		'show_availability_status'))
 
 	products_template = 'templates/includes/products_as_grid.html'
 	if cint(frappe.db.get_single_value('Products Settings', 'products_as_list')):

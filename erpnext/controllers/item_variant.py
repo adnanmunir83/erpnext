@@ -92,7 +92,10 @@ def validate_is_incremental(numeric_attribute, attribute, value, item):
 			InvalidItemAttributeValueError, title=_('Invalid Attribute'))
 
 def validate_item_attribute_value(attributes_list, attribute, attribute_value, item):
-	if attribute_value not in attributes_list:
+	allow_rename_attribute_value = frappe.db.get_single_value('Item Variant Settings', 'allow_rename_attribute_value')
+	if allow_rename_attribute_value:
+		pass
+	elif attribute_value not in attributes_list:
 		frappe.throw(_("Value {0} for Attribute {1} does not exist in the list of valid Item Attribute Values for Item {2}").format(
 			attribute_value, attribute, item), InvalidItemAttributeValueError, title=_('Invalid Attribute'))
 
@@ -173,6 +176,14 @@ def create_variant(item, args):
 @frappe.whitelist()
 def enqueue_multiple_variant_creation(item, args):
 	# There can be innumerable attribute combinations, enqueue
+	if isinstance(args, basestring):
+		variants = json.loads(args)
+	total_variants = 1
+	for key in variants:
+		total_variants *= len(variants[key])
+	if total_variants >= 600:
+		frappe.msgprint("Please do not create more than 500 items at a time", raise_exception=1)
+		return
 	frappe.enqueue("erpnext.controllers.item_variant.create_multiple_variants",
 		item=item, args=args, now=frappe.flags.in_test);
 

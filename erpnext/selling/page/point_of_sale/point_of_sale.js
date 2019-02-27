@@ -256,17 +256,26 @@ erpnext.pos.PointOfSale = class PointOfSale {
 		if (field == 'qty' && value < 0) {
 			frappe.msgprint(__("Quantity must be positive"));
 			value = item.qty;
+		} else {
+			if (in_list(["qty", "serial_no", "batch"], field)) {
+				item[field] = value;
+				if (field == "serial_no" && value) {
+					let serial_nos = value.split("\n");
+					item["qty"] = serial_nos.filter(d => {
+						return d!=="";
+					}).length;
+				}
+			} else {
+				return frappe.model.set_value(item.doctype, item.name, field, value);
+			}
 		}
 
-		if (field) {
-			return frappe.model.set_value(item.doctype, item.name, field, value)
-				.then(() => this.frm.script_manager.trigger('qty', item.doctype, item.name))
-				.then(() => {
-					if (field === 'qty' && item.qty === 0) {
-						frappe.model.clear_doc(item.doctype, item.name);
-					}
-				})
-		}
+		return this.frm.script_manager.trigger('qty', item.doctype, item.name)
+			.then(() => {
+				if (field === 'qty' && item.qty === 0) {
+					frappe.model.clear_doc(item.doctype, item.name);
+				}
+			})
 
 		return Promise.resolve();
 	}
@@ -283,20 +292,13 @@ erpnext.pos.PointOfSale = class PointOfSale {
 	}
 
 	submit_sales_invoice() {
-
-		frappe.confirm(__("Permanently Submit {0}?", [this.frm.doc.name]), () => {
-			frappe.call({
-				method: 'erpnext.selling.page.point_of_sale.point_of_sale.submit_invoice',
-				freeze: true,
-				args: {
-					doc: this.frm.doc
-				}
-			}).then(r => {
-				if(r.message) {
-					this.frm.doc = r.message;
+		this.frm.savesubmit()
+			.then((r) => {
+				if (r && r.doc) {
+					this.frm.doc.docstatus = r.doc.docstatus;
 					frappe.show_alert({
 						indicator: 'green',
-						message: __(`Sales invoice ${r.message.name} created succesfully`)
+						message: __(`Sales invoice ${r.doc.name} created succesfully`)
 					});
 
 					this.toggle_editing();
@@ -304,21 +306,22 @@ erpnext.pos.PointOfSale = class PointOfSale {
 					this.set_primary_action_in_modal();
 				}
 			});
-		});
 	}
 
 	set_primary_action_in_modal() {
-		this.frm.msgbox = frappe.msgprint(
-			`<a class="btn btn-primary" onclick="cur_frm.print_preview.printit(true)" style="margin-right: 5px;">
-				${__('Print')}</a>
-			<a class="btn btn-default">
-				${__('New')}</a>`
-		);
+		if (!this.frm.msgbox) {
+			this.frm.msgbox = frappe.msgprint(
+				`<a class="btn btn-primary" onclick="cur_frm.print_preview.printit(true)" style="margin-right: 5px;">
+					${__('Print')}</a>
+				<a class="btn btn-default">
+					${__('New')}</a>`
+			);
 
-		$(this.frm.msgbox.body).find('.btn-default').on('click', () => {
-			this.frm.msgbox.hide();
-			this.make_new_invoice();
-		})
+			$(this.frm.msgbox.body).find('.btn-default').on('click', () => {
+				this.frm.msgbox.hide();
+				this.make_new_invoice();
+			})
+		}
 	}
 
 	change_pos_profile() {
@@ -487,11 +490,6 @@ erpnext.pos.PointOfSale = class PointOfSale {
 		//
 		// }).addClass('visible-xs');
 
-		this.page.add_menu_item(__("Form View"), function () {
-			frappe.model.sync(me.frm.doc);
-			frappe.set_route("Form", me.frm.doc.doctype, me.frm.doc.name);
-		});
-
 		this.page.add_menu_item(__("POS Profile"), function () {
 			frappe.set_route('List', 'POS Profile');
 		});
@@ -589,6 +587,7 @@ class POSCart {
 		this.$taxes_and_totals.html(this.get_taxes_and_totals());
 		this.numpad && this.numpad.reset_value();
 		this.customer_field.set_value("");
+		this.frm.msgbox = "";
 
 		this.$discount_amount.find('input:text').val('');
 		this.wrapper.find('.grand-total-value').text(
@@ -775,7 +774,7 @@ class POSCart {
 						});
 						this.numpad.reset_value();
 					} else {
-						const item_code = this.selected_item.attr('data-item-code');
+						const item_code = unescape(this.selected_item.attr('data-item-code'));
 						const field = this.selected_item.active_field;
 						const value = this.numpad.get_value();
 
@@ -820,7 +819,7 @@ class POSCart {
 	}
 
 	update_item(item) {
-		const $item = this.$cart_items.find(`[data-item-code="${item.item_code}"]`);
+		const $item = this.$cart_items.find(`[data-item-code="${escape(item.item_code)}"]`);
 
 		if(item.qty > 0) {
 			const is_stock_item = this.get_item_details(item.item_code).is_stock_item;
@@ -842,7 +841,7 @@ class POSCart {
 		const rate = format_currency(item.rate, this.frm.doc.currency);
 		const indicator_class = (!is_stock_item || item.actual_qty >= item.qty) ? 'green' : 'red';
 		return `
-			<div class="list-item indicator ${indicator_class}" data-item-code="${item.item_code}" title="Item: ${item.item_name}  Available Qty: ${item.actual_qty}">
+			<div class="list-item indicator ${indicator_class}" data-item-code="${escape(item.item_code)}" title="Item: ${item.item_name}  Available Qty: ${item.actual_qty}">
 				<div class="item-name list-item__content list-item__content--flex-1.5 ellipsis">
 					${item.item_name}
 				</div>
@@ -884,18 +883,18 @@ class POSCart {
 	}
 
 	exists(item_code) {
-		let $item = this.$cart_items.find(`[data-item-code="${item_code}"]`);
+		let $item = this.$cart_items.find(`[data-item-code="${escape(item_code)}"]`);
 		return $item.length > 0;
 	}
 
 	highlight_item(item_code) {
-		const $item = this.$cart_items.find(`[data-item-code="${item_code}"]`);
+		const $item = this.$cart_items.find(`[data-item-code="${escape(item_code)}"]`);
 		$item.addClass('highlight');
 		setTimeout(() => $item.removeClass('highlight'), 1000);
 	}
 
 	scroll_to_item(item_code) {
-		const $item = this.$cart_items.find(`[data-item-code="${item_code}"]`);
+		const $item = this.$cart_items.find(`[data-item-code="${escape(item_code)}"]`);
 		if ($item.length === 0) return;
 		const scrollTop = $item.offset().top - this.$cart_items.offset().top + this.$cart_items.scrollTop();
 		this.$cart_items.animate({ scrollTop });
@@ -910,7 +909,7 @@ class POSCart {
 			'[data-action="increment"], [data-action="decrement"]', function() {
 				const $btn = $(this);
 				const $item = $btn.closest('.list-item[data-item-code]');
-				const item_code = $item.attr('data-item-code');
+				const item_code = unescape($item.attr('data-item-code'));
 				const action = $btn.attr('data-action');
 
 				if(action === 'increment') {
@@ -933,7 +932,7 @@ class POSCart {
 		this.$cart_items.on('change', '.quantity input', function() {
 			const $input = $(this);
 			const $item = $input.closest('.list-item[data-item-code]');
-			const item_code = $item.attr('data-item-code');
+			const item_code = unescape($item.attr('data-item-code'));
 			events.on_field_change(item_code, 'qty', flt($input.val()));
 		});
 
@@ -1201,7 +1200,7 @@ class POSItems {
 		var me = this;
 		this.wrapper.on('click', '.pos-item-wrapper', function() {
 			const $item = $(this);
-			const item_code = $item.attr('data-item-code');
+			const item_code = unescape($item.attr('data-item-code'));
 			me.events.update_cart(item_code, 'qty', '+1');
 		});
 	}
@@ -1227,7 +1226,7 @@ class POSItems {
 		const item_title = item_name || item_code;
 
 		const template = `
-			<div class="pos-item-wrapper image-view-item" data-item-code="${item_code}">
+			<div class="pos-item-wrapper image-view-item" data-item-code="${escape(item_code)}">
 				<div class="image-view-header">
 					<div>
 						<a class="grey list-id" data-name="${item_code}" title="${item_title}">
@@ -1480,7 +1479,7 @@ class Payment {
 				fieldname: p.mode_of_payment,
 				default: p.amount,
 				onchange: () => {
-					const value = this.dialog.get_value(this.fieldname);
+					const value = this.dialog.get_value(this.fieldname) || 0;
 					me.update_payment_value(this.fieldname, value);
 				}
 			};

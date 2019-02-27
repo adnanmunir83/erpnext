@@ -156,14 +156,18 @@ class Timesheet(Document):
 			(self.production_order, operation_id), as_dict=1)[0]
 
 	def update_task_and_project(self):
+		tasks, projects = [], []
+
 		for data in self.time_logs:
-			if data.task:
+			if data.task and data.task not in tasks:
 				task = frappe.get_doc("Task", data.task)
 				task.update_time_and_costing()
 				task.save()
+				tasks.append(data.task)
 
-			elif data.project:
+			elif data.project and data.project not in projects:
 				frappe.get_doc("Project", data.project).update_project()
+				projects.append(data.project)
 
 	def validate_dates(self):
 		for data in self.time_logs:
@@ -286,7 +290,7 @@ def get_projectwise_timesheet_data(project, parent=None):
 		cond = "and parent = %(parent)s"
 
 	return frappe.db.sql("""select name, parent, billing_hours, billing_amount as billing_amt
-			from `tabTimesheet Detail` where docstatus=1 and project = %(project)s {0} and billable = 1
+			from `tabTimesheet Detail` where parenttype = 'Timesheet' and docstatus=1 and project = %(project)s {0} and billable = 1
 			and sales_invoice is null""".format(cond), {'project': project, 'parent': parent}, as_dict=1)
 
 @frappe.whitelist()
@@ -416,9 +420,10 @@ def get_timesheets_list(doctype, txt, filters, limit_start, limit_page_length=20
 	# find customer name from contact.
 	customer = frappe.db.sql('''SELECT dl.link_name FROM `tabContact` AS c inner join \
 		`tabDynamic Link` AS dl ON c.first_name=dl.link_name WHERE c.email_id=%s''',user)
-	# find list of Sales Invoice for made for customer.
-	sales_invoice = frappe.db.sql('''SELECT name FROM `tabSales Invoice` WHERE customer = %s''',customer)
+
 	if customer:
+		# find list of Sales Invoice for made for customer.
+		sales_invoice = frappe.db.sql('''SELECT name FROM `tabSales Invoice` WHERE customer = %s''',customer)
 		# Return timesheet related data to web portal.
 		return frappe. db.sql('''SELECT ts.name, tsd.activity_type, ts.status, ts.total_billable_hours, \
 			tsd.sales_invoice, tsd.project  FROM `tabTimesheet` AS ts inner join `tabTimesheet Detail` \

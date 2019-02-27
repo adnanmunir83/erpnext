@@ -8,6 +8,7 @@ from frappe import _, throw
 from erpnext.stock.get_item_details import get_bin_details
 from erpnext.stock.utils import get_incoming_rate
 from erpnext.stock.get_item_details import get_conversion_factor
+from frappe.contacts.doctype.address.address import get_address_display
 
 from erpnext.controllers.stock_controller import StockController
 
@@ -35,9 +36,12 @@ class SellingController(StockController):
 
 	def validate(self):
 		super(SellingController, self).validate()
+		self.validate_items()
 		self.validate_max_discount()
 		self.validate_selling_price()
 		self.set_qty_as_per_stock_uom()
+		self.set_po_nos()
+		self.set_customer_address()
 		check_active_sales_items(self)
 
 	def set_missing_values(self, for_validate=False):
@@ -50,9 +54,15 @@ class SellingController(StockController):
 	def set_missing_lead_customer_details(self):
 		if getattr(self, "customer", None):
 			from erpnext.accounts.party import _get_party_details
+			fetch_payment_terms_template = False
+			if (self.get("__islocal") or
+				self.company != frappe.db.get_value(self.doctype, self.name, 'company')):
+				fetch_payment_terms_template = True
+
 			party_details = _get_party_details(self.customer,
 				ignore_permissions=self.flags.ignore_permissions,
-				doctype=self.doctype, company=self.company)
+				doctype=self.doctype, company=self.company,
+				fetch_payment_terms_template=fetch_payment_terms_template)
 			if not self.meta.get_field("sales_team"):
 				party_details.pop("sales_team")
 
@@ -150,13 +160,16 @@ class SellingController(StockController):
 		if not frappe.db.get_single_value("Selling Settings", "validate_selling_price"):
 			return
 
+		if hasattr(self, "is_return") and self.is_return:
+			return
+
 		for it in self.get("items"):
 			if not it.item_code:
 				continue
 
 			last_purchase_rate, is_stock_item = frappe.db.get_value("Item", it.item_code, ["last_purchase_rate", "is_stock_item"])
 			last_purchase_rate_in_sales_uom = last_purchase_rate / (it.conversion_factor or 1)
-			if flt(it.base_rate) < flt(last_purchase_rate_in_sales_uom) and not self.is_return:
+			if flt(it.base_rate) < flt(last_purchase_rate_in_sales_uom):
 				throw_message(it.item_name, last_purchase_rate_in_sales_uom, "last purchase rate")
 
 			last_valuation_rate = frappe.db.sql("""
@@ -166,7 +179,7 @@ class SellingController(StockController):
 				""", (it.item_code, it.warehouse))
 			if last_valuation_rate:
 				last_valuation_rate_in_sales_uom = last_valuation_rate[0][0] / (it.conversion_factor or 1)
-				if is_stock_item and flt(it.base_rate) < flt(last_valuation_rate_in_sales_uom) and not self.is_return:
+				if is_stock_item and flt(it.base_rate) < flt(last_valuation_rate_in_sales_uom):
 					throw_message(it.name, last_valuation_rate_in_sales_uom, "valuation rate")
 
 
@@ -323,8 +336,31 @@ class SellingController(StockController):
 							"actual_qty": -1*flt(d.qty),
 							"incoming_rate": return_rate
 						}))
-
 		self.make_sl_entries(sl_entries)
+
+	def set_po_nos(self):
+		if self.doctype in ("Delivery Note", "Sales Invoice") and hasattr(self, "items"):
+			ref_fieldname = "against_sales_order" if self.doctype == "Delivery Note" else "sales_order"
+			sales_orders = list(set([d.get(ref_fieldname) for d in self.items if d.get(ref_fieldname)]))
+			if sales_orders:
+				po_nos = frappe.get_all('Sales Order', 'po_no', filters = {'name': ('in', sales_orders)})
+				self.po_no = ', '.join(list(set([d.po_no for d in po_nos if d.po_no])))
+
+	def set_customer_address(self):
+		address_dict = {
+			'customer_address': 'address_display',
+			'shipping_address_name': 'shipping_address',
+			'company_address': 'company_address_display'
+		}
+
+		for address_field, address_display_field in address_dict.items():
+			if self.get(address_field):
+				self.set(address_display_field, get_address_display(self.get(address_field)))
+
+	def validate_items(self):
+		# validate items to see if they have is_sales_item enabled
+		from erpnext.controllers.buying_controller import validate_item_type
+		validate_item_type(self, "is_sales_item", "sales")
 
 def check_active_sales_items(obj):
 	for d in obj.get("items"):

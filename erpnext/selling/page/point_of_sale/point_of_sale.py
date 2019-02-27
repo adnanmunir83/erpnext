@@ -49,6 +49,7 @@ def get_items(start, page_length, price_list, item_group, search_value="", pos_p
 		where
 			i.disabled = 0 and i.has_variants = 0 and i.is_sales_item = 1
 			and i.item_group in (select name from `tabItem Group` where lft >= {lft} and rgt <= {rgt})
+			and ifnull(i.end_of_life, curdate()) >= curdate()
 			and {condition}
 		limit {start}, {page_length}""".format(start=start,
 			page_length=page_length, lft=lft, rgt=rgt, condition=condition),
@@ -86,19 +87,6 @@ def get_conditions(item_code, serial_no, batch_no, barcode):
 			or i.item_name like %(item_code)s)"""
 
 	return '%%%s%%'%(frappe.db.escape(item_code)), condition
-
-@frappe.whitelist()
-def submit_invoice(doc):
-	if isinstance(doc, basestring):
-		args = json.loads(doc)
-
-	doc = frappe.new_doc('Sales Invoice')
-	doc.update(args)
-	doc.run_method("set_missing_values")
-	doc.run_method("calculate_taxes_and_totals")
-	doc.submit()
-
-	return doc
 
 def get_item_group_condition(pos_profile):
 	cond = "and 1=1"

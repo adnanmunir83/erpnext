@@ -45,13 +45,20 @@ class Employee(NestedSet):
 		self.validate_prefered_email()
 
 		if self.user_id:
-			self.validate_for_enabled_user_id()
-			self.validate_duplicate_user_id()
+			self.validate_user_details()
 		else:
 			existing_user_id = frappe.db.get_value("Employee", self.name, "user_id")
 			if existing_user_id:
 				frappe.permissions.remove_user_permission(
 					"Employee", self.name, existing_user_id)
+
+	def validate_user_details(self):
+		data = frappe.db.get_value('User',
+			self.user_id, ['enabled', 'user_image'], as_dict=1)
+		if data.get("user_image"):
+			self.image = data.get("user_image")
+		self.validate_for_enabled_user_id(data.get("enabled", 0))
+		self.validate_duplicate_user_id()
 
 	def update_nsm_model(self):
 		frappe.utils.nestedset.update_nsm(self)
@@ -133,10 +140,10 @@ class Employee(NestedSet):
 		if self.status == 'Left' and not self.relieving_date:
 			throw(_("Please enter relieving date."))
 
-	def validate_for_enabled_user_id(self):
+	def validate_for_enabled_user_id(self, enabled):
 		if not self.status == 'Active':
 			return
-		enabled = frappe.db.get_value("User", self.user_id, "enabled")
+
 		if enabled is None:
 			frappe.throw(_("User {0} does not exist").format(self.user_id))
 		if enabled == 0:
@@ -263,7 +270,7 @@ def deactivate_sales_person(status = None, employee = None):
 			frappe.db.set_value("Sales Person", sales_person, "enabled", 0)
 
 @frappe.whitelist()
-def create_user(employee, user = None):
+def create_user(employee, user = None, email=None):
 	emp = frappe.get_doc("Employee", employee)
 
 	employee_name = emp.employee_name.split(" ")
@@ -276,6 +283,9 @@ def create_user(employee, user = None):
 		last_name = employee_name[1]
 
 	first_name = employee_name[0]
+
+	if email:
+		emp.prefered_email = email
 
 	user = frappe.new_doc("User")
 	user.update({

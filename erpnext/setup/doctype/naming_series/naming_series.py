@@ -20,7 +20,7 @@ class NamingSeries(Document):
 			+ frappe.db.sql_list("""select dt from `tabCustom Field`
 				where fieldname='naming_series'""")))
 
-		doctypes = list(set(get_doctypes_with_read()) | set(doctypes))
+		doctypes = list(set(get_doctypes_with_read()).intersection(set(doctypes)))
 		prefixes = ""
 		for d in doctypes:
 			options = ""
@@ -34,7 +34,14 @@ class NamingSeries(Document):
 			if options:
 				prefixes = prefixes + "\n" + options
 		prefixes.replace("\n\n", "\n")
-		prefixes = "\n".join(sorted(prefixes.split("\n")))
+		prefixes = prefixes.split("\n")
+
+		custom_prefixes = frappe.get_all('DocType', fields=["autoname"],
+			filters={"name": ('not in', doctypes), "autoname":('like', '%.#%'), 'module': ('not in', ['Core'])})
+		if custom_prefixes:
+			prefixes = prefixes + [d.autoname.rsplit('.', 1)[0] for d in custom_prefixes]
+
+		prefixes = "\n".join(sorted(prefixes))
 
 		return {
 			"transactions": "\n".join([''] + sorted(doctypes)),
@@ -47,6 +54,7 @@ class NamingSeries(Document):
 
 	def update_series(self, arg=None):
 		"""update series list"""
+		self.validate_series_set()
 		self.check_duplicate()
 		series_list = self.set_options.split("\n")
 
@@ -59,6 +67,10 @@ class NamingSeries(Document):
 		msgprint(_("Series Updated"))
 
 		return self.get_transactions()
+
+	def validate_series_set(self):
+		if self.select_doc_for_series and not self.set_options:
+			frappe.throw(_("Please set the series to be used."))
 
 	def set_series_for(self, doctype, ol):
 		options = self.scrub_options_list(ol)

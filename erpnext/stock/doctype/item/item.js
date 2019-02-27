@@ -110,7 +110,7 @@ frappe.ui.form.on("Item", {
 		const stock_exists = (frm.doc.__onload
 			&& frm.doc.__onload.stock_exists) ? 1 : 0;
 
-		['has_serial_no', 'has_batch_no'].forEach((fieldname) => {
+		['is_stock_item', 'has_serial_no', 'has_batch_no'].forEach((fieldname) => {
 			frm.set_df_property(fieldname, 'read_only', stock_exists);
 		});
 	},
@@ -169,6 +169,35 @@ frappe.ui.form.on('Item Reorder', {
 		row.material_request_type = (type == 'Material Transfer')? 'Transfer' : type;
 	}
 })
+
+frappe.ui.form.on('Item Customer Detail', {
+	customer_items_add: function(frm, cdt, cdn) {
+		frappe.model.set_value(cdt, cdn, 'customer_group', "");
+	},
+	customer_name: function(frm, cdt, cdn) {
+		set_customer_group(frm, cdt, cdn);
+	},
+	customer_group: function(frm, cdt, cdn) {
+		if(set_customer_group(frm, cdt, cdn)){
+			frappe.msgprint(__("Changing Customer Group for the selected Customer is not allowed."));
+		}
+	}
+});
+
+var set_customer_group = function(frm, cdt, cdn) {
+	var row = frappe.get_doc(cdt, cdn);
+
+	if (!row.customer_name) {
+		return false;
+	}
+
+	frappe.model.with_doc("Customer", row.customer_name, function() {
+		var customer = frappe.model.get_doc("Customer", row.customer_name);
+		row.customer_group = customer.customer_group;
+		refresh_field("customer_group", cdn, "customer_items");
+	});
+	return true;
+}
 
 $.extend(erpnext.item, {
 	setup_queries: function(frm) {
@@ -426,7 +455,10 @@ $.extend(erpnext.item, {
 						filters: [
 							["parent","=", attribute]
 						],
-						fields: ["attribute_value"]
+						fields: ["attribute_value"],
+						limit_start: 0,
+						limit_page_length: 500,
+						parent: "Item Attribute"
 					}
 				}).then((r) => {
 					if(r.message) {
@@ -546,7 +578,8 @@ $.extend(erpnext.item, {
 								["parent","=", i],
 								["attribute_value", "like", term + "%"]
 							],
-							fields: ["attribute_value"]
+							fields: ["attribute_value"],
+							parent: "Item Attribute"
 						},
 						callback: function(r) {
 							if (r.message) {

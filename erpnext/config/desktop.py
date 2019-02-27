@@ -200,7 +200,7 @@ def get_data():
 			"color": "#fd784f",
 			"icon": "octicon octicon-calendar",
 			"label": _("Course Schedule"),
-			"link": "Calendar/Course Schedule",
+			"link": "List/Course Schedule/Calendar",
 			"_doctype": "Course Schedule",
 			"type": "list",
 			"hidden": 1
@@ -290,14 +290,6 @@ def get_data():
 			"type": "module",
 			"label": _("Healthcare"),
 			"hidden": 1
-		},
-		{
-			"module_name": "Hub",
-			"color": "#009248",
-			"icon": "/assets/erpnext/images/hub_logo.svg",
-			"type": "page",
-			"link": "hub",
-			"label": _("Hub")
 		},
 		{
 			"module_name": "Data Import",

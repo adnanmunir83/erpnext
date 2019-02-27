@@ -241,7 +241,8 @@ def make_purchase_order(source_name, target_doc=None):
 				["parent", "material_request"],
 				["uom", "stock_uom"],
 				["uom", "uom"],
-				["sales_order", "sales_order"]
+				["sales_order", "sales_order"],
+				["sales_order_item", "sales_order_item"]
 			],
 			"postprocess": update_item,
 			"condition": lambda doc: doc.ordered_qty < doc.stock_qty
@@ -416,6 +417,7 @@ def raise_production_orders(material_request):
 				prod_order.material_request_item = d.name
 				prod_order.planned_start_date = mr.transaction_date
 				prod_order.company = mr.company
+				prod_order.set_production_order_operations()
 				prod_order.save()
 				production_orders.append(prod_order.name)
 			else:
