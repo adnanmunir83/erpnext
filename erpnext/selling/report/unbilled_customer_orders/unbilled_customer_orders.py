@@ -42,6 +42,13 @@ class UnbilledCustomerOrdersReport(object):
 				"width": 120
 			},
 			{
+				"label": _("Sales Order"),
+				"fieldtype": "Link",
+				"options": "Sales Order",
+				"fieldname": "so",
+				"width": 120
+			},
+			{
 				"label": _("Against Voucher Type"),
 				"fieldtype": "Data",
 				"fieldname": "against_voucher_type",
@@ -110,6 +117,15 @@ class UnbilledCustomerOrdersReport(object):
 		for d in self.unbilled_orders:
 			unbilled_rows.append(d)
 
+		invoices = []
+		for d in ledger_rows:
+			if d.voucher_type == "Sales Invoice":
+				invoices.append(d.voucher_no)
+		invoice_order_nos = self.get_invoice_order_nos(invoices)
+		for d in ledger_rows:
+			if d.voucher_type == "Sales Invoice":
+				d.so = invoice_order_nos.get(d.voucher_no)
+
 		data = [opening_balance] + ledger_rows + [closing_balance] + unbilled_rows
 		self.calculate_running_total(data)
 		return data
@@ -131,11 +147,11 @@ class UnbilledCustomerOrdersReport(object):
 	def get_unbilled_orders(self):
 		self.unbilled_orders = frappe.db.sql("""
 			select
-				so.transaction_date as posting_date, 'Sales Order' as voucher_type, so.name as voucher_no,
+				so.transaction_date as posting_date, so.name as so,
 				so.rounded_total as debit,
 				sum(ifnull(si.rounded_total, 0)) as credit
 			from `tabSales Order` so
-			left join `tabSales Invoice` si on si.docstatus=1 and exists(
+			left join `tabSales Invoice` si on si.docstatus=1 and si.is_return!=1 and exists(
 				select item.name
 				from `tabSales Invoice Item` item
 				where item.parent = si.name and item.sales_order = so.name
@@ -147,6 +163,18 @@ class UnbilledCustomerOrdersReport(object):
 			having debit-credit > 0
 			order by transaction_date
 		""", self.filters, as_dict=1)
+
+	def get_invoice_order_nos(self, invoices):
+		if not invoices:
+			return {}
+
+		res = frappe.db.sql("""
+			select parent, GROUP_CONCAT(DISTINCT sales_order SEPARATOR ', ')
+			from `tabSales Invoice Item`
+			where parent in ({invoices})
+			group by parent
+		""".format(invoices=", ".join(["%s"] * len(invoices))), invoices)
+		return dict(res)
 
 	def calculate_running_total(self, data):
 		for i, d in enumerate(data):
