@@ -1158,9 +1158,10 @@ def update_item_qty_based_on_sales_order(items):
 				row['qty'] = 0
 			else:
 				invoiced_qty = frappe.db.sql("""
-					select sum(qty)
-					from `tabSales Invoice Item`
-					where docstatus < 2 and so_detail = %s and parent != %s
+					select sum(item.qty)
+					from `tabSales Invoice Item` item
+					inner join `tabSales Invoice` si on si.name = item.parent
+					where si.docstatus < 2 and si.is_return != 1 and item.so_detail = %s and item.parent != %s
 				""", [item.so_detail, item.parent])
 				invoiced_qty = invoiced_qty[0][0] if invoiced_qty else 0
 				invoiced_qty = flt(invoiced_qty)
