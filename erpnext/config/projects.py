@@ -15,7 +15,7 @@ def get_data():
 				{
 					"type": "doctype",
 					"name": "Task",
-					"route": "List/Task",
+					"route": "Tree/Task",
 					"description": _("Project activity / task."),
 				},
 				{
@@ -69,16 +69,5 @@ def get_data():
 					"doctype": "Project"
 				},
 			]
-		},
-		{
-			"label": _("Help"),
-			"icon": "fa fa-facetime-video",
-			"items": [
-				{
-					"type": "help",
-					"label": _("Managing Projects"),
-					"youtube_id": "egxIGwtoKI4"
-				},
-			]
-		},
+		}
 	]

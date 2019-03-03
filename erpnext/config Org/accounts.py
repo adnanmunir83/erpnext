@@ -98,6 +98,14 @@ def get_data():
 				{
 					"type": "doctype",
 					"name": "Item",
+				},
+				{
+					"type": "doctype",
+					"name": "Asset",
+				},
+				{
+					"type": "doctype",
+					"name": "Asset Category",
 				}
 			]
 		},
@@ -268,13 +276,13 @@ def get_data():
 				},
 				{
 					"type": "doctype",
-					"name": "Cheque Print Template",
-					"description": _("Setup cheque dimensions for printing")
+					"name": "Asset Movement",
+					"description": _("Transfer an asset from one warehouse to another")
 				},
 				{
 					"type": "doctype",
-					"name": "Opening Invoice Creation Tool",
-					"description": _("Make Opening Sales and Purchase Invoices")
+					"name": "Cheque Print Template",
+					"description": _("Setup cheque dimensions for printing")
 				},
 			]
 		},
@@ -396,6 +404,18 @@ def get_data():
 			"items": [
 				{
 					"type": "report",
+					"name": "Asset Depreciation Ledger",
+					"doctype": "Asset",
+					"is_query_report": True,
+				},
+				{
+					"type": "report",
+					"name": "Asset Depreciations and Balances",
+					"doctype": "Asset",
+					"is_query_report": True,
+				},
+				{
+					"type": "report",
 					"name": "Trial Balance for Party",
 					"doctype": "GL Entry",
 					"is_query_report": True,
@@ -455,5 +475,26 @@ def get_data():
 					"doctype": "Sales Invoice"
 				}
 			]
-		}		
+		},
+		{
+			"label": _("Help"),
+			"icon": "fa fa-facetime-video",
+			"items": [
+				{
+					"type": "help",
+					"label": _("Chart of Accounts"),
+					"youtube_id": "DyR-DST-PyA"
+				},
+				{
+					"type": "help",
+					"label": _("Opening Accounting Balance"),
+					"youtube_id": "kdgM20Q-q68"
+				},
+				{
+					"type": "help",
+					"label": _("Setting up Taxes"),
+					"youtube_id": "nQ1zZdPgdaQ"
+				}
+			]
+		}
 	]
