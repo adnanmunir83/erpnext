@@ -131,26 +131,5 @@ def get_data():
 					"doctype": "BOM"
 				}
 			]
-		},
-		{
-			"label": _("Help"),
-			"icon": "fa fa-facetime-video",
-			"items": [
-				{
-					"type": "help",
-					"label": _("Bill of Materials"),
-					"youtube_id": "hDV0c1OeWLo"
-				},
-				{
-					"type": "help",
-					"label": _("Production Planning Tool"),
-					"youtube_id": "CzatSl4zJ2Y"
-				},
-				{
-					"type": "help",
-					"label": _("Production Order"),
-					"youtube_id": "ZotgLyp2YFY"
-				},
-			]
-		}
+		}		
 	]
