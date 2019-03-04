@@ -50,7 +50,7 @@ erpnext.PurchaseAnalytics = frappe.views.TreeGridReport.extend({
 				parent_field: "parent_item_group",
 				item_key: "item_code",
 				formatter: function(item) {
-					return item.name;
+					return item.name != item.item_name ? item.item_name + " (" + item.name + ")" : item.name;
 				}
 			},
 			"Item": {
@@ -58,7 +58,7 @@ erpnext.PurchaseAnalytics = frappe.views.TreeGridReport.extend({
 				show: false,
 				item_key: "item_code",
 				formatter: function(item) {
-					return item.name;
+					return item.name != item.item_name ? item.item_name + " (" + item.name + ")" : item.name;
 				}
 			},
 		}
