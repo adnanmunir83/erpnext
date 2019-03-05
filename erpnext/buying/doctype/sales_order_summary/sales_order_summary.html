@@ -94,6 +94,7 @@
 				<th style="text-align:right;">Boxes</th>
 				<th style="text-align:right;">Pieces</th>
 				<th style="text-align:right;">Net Amount</th>
+				<th style="text-align:right;">Remaining Qty</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -112,6 +113,7 @@
 					<td style="text-align:right;">{{ so_item.boxes }}</td>
 					<td style="text-align:right;">{{ so_item.pieces }}</td>
 					<td style="text-align:right;">{{ so_item.net_amount }}</td>
+					<td style="text-align:right;">{{ so_item.remaining_qty }}</td>
 				</tr>
 				{% i++ %}
 				{% endfor %}
@@ -128,6 +130,7 @@
 				<td style="text-align:right;">{{ get_sum(sales_order_details, "items", "boxes") }}</td>
 				<td style="text-align:right;">{{ get_sum(sales_order_details, "items", "pieces") }}</td>
 				<td style="text-align:right;">{{ get_sum(sales_order_details, "items", "net_amount") }}</td>
+				<td style="text-align:right;">{{ get_sum(sales_order_details, "items", "remaining_qty") }}</td>
 			</tr>
 		</tfoot>
 	</table>
