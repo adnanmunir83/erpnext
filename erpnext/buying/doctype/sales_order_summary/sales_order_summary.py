@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
 from frappe.desk.form.linked_with import get_linked_doctypes
+from frappe.utils import flt
 from collections import defaultdict
 
 
@@ -35,12 +36,17 @@ def get_related_documents(doctype, docname):
 
 		for doc in names:
 			doc_obj = frappe.get_doc(linked_doctype, doc.name)
+
 			if linked_doctype == "Sales Invoice":
 				si_list.append(doc_obj.name)
 			if linked_doctype == "Sales Invoice" and doc_obj.is_return:
 				document_details["Sales Return"].append(doc_obj.as_dict())
 			else:
 				document_details[linked_doctype].append(doc_obj.as_dict())
+
+	for so in document_details["Sales Order"]:
+		for d in so.get("items"):
+			d.remaining_qty = flt(d.qty) - flt(d.delivered_qty) - flt(d.returned_qty)
 
 	# include the Payment Entry against invoice
 	if si_list:

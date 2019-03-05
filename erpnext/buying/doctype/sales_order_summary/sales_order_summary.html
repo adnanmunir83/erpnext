@@ -17,6 +17,8 @@
 	return flt(sum, 2);
 } %}
 
+{% var i = 0 %}
+
 <!-- Sales Order Details -->
 <div class="row">
 	<div class="form-column col-sm-6">
@@ -92,13 +94,15 @@
 				<th style="text-align:right;">Boxes</th>
 				<th style="text-align:right;">Pieces</th>
 				<th style="text-align:right;">Net Amount</th>
+				<th style="text-align:right;">Remaining Qty</th>
 			</tr>
 		</thead>
 		<tbody>
 			{% for so in sales_order_details %}
+				{% i = 0 %}
 				{% for so_item in so.items %}
 				<tr>
-					{% if (so_item.idx === 1) { %}
+					{% if (i === 0) { %}
 					<td rowspan="{{so.items.length}}" style="white-space:nowrap;">{{ so.name }}</td>
 					<td rowspan="{{so.items.length}}">{{ so.status }}</td>
 					{% } %}
@@ -109,7 +113,9 @@
 					<td style="text-align:right;">{{ so_item.boxes }}</td>
 					<td style="text-align:right;">{{ so_item.pieces }}</td>
 					<td style="text-align:right;">{{ so_item.net_amount }}</td>
+					<td style="text-align:right;">{{ so_item.remaining_qty }}</td>
 				</tr>
+				{% i++ %}
 				{% endfor %}
 			{% endfor %}
 		</tbody>
@@ -124,6 +130,7 @@
 				<td style="text-align:right;">{{ get_sum(sales_order_details, "items", "boxes") }}</td>
 				<td style="text-align:right;">{{ get_sum(sales_order_details, "items", "pieces") }}</td>
 				<td style="text-align:right;">{{ get_sum(sales_order_details, "items", "net_amount") }}</td>
+				<td style="text-align:right;">{{ get_sum(sales_order_details, "items", "remaining_qty") }}</td>
 			</tr>
 		</tfoot>
 	</table>
@@ -149,9 +156,10 @@
 		</thead>
 		<tbody>
 			{% for mr in material_request_details %}
+				{% i = 0 %}
 				{% for mr_item in mr.items %}
 				<tr>
-					{% if (mr_item.idx === 1) { %}
+					{% if (i === 0) { %}
 					<td rowspan="{{mr.items.length}}" style="white-space:nowrap;">{{ mr.name }}</td>
 					<td rowspan="{{mr.items.length}}">{{ mr.status }}</td>
 					<td rowspan="{{mr.items.length}}">{{ mr.transaction_date }}</td>
@@ -162,6 +170,7 @@
 					<td style="text-align:right;">{{ mr_item.pieces }}</td>
 					<td>{{ mr_item.custom_warehouse_name }}</td>
 				</tr>
+				{% i++ %}
 				{% endfor %}
 			{% endfor %}
 		</tbody>
@@ -204,9 +213,10 @@
 		</thead>
 		<tbody>
 			{% for se in stock_entry_details %}
+				{% i = 0 %}
 				{% for se_item in se.items %}
 				<tr>
-					{% if (se_item.idx === 1) { %}
+					{% if (i === 0) { %}
 					<td rowspan="{{se.items.length}}" style="white-space:nowrap;">{{ se.name }}</td>
 					<td rowspan="{{se.items.length}}">{{ se.transfer_type }}</td>
 					<td rowspan="{{se.items.length}}">{{ se.posting_date }}</td>
@@ -219,6 +229,7 @@
 					<td style="text-align:right;">{{ se_item.boxes }}</td>
 					<td style="text-align:right;">{{ se_item.pieces }}</td>
 				</tr>
+				{% i++ %}
 				{% endfor %}
 			{% endfor %}
 		</tbody>
@@ -262,9 +273,10 @@
 		</thead>
 		<tbody>
 			{% for de in delivery_note_details %}
+				{% i = 0 %}
 				{% for de_item in de.items %}
 				<tr>
-					{% if (de_item.idx === 1) { %}
+					{% if (i === 0) { %}
 					<td rowspan="{{de.items.length}}" style="white-space:nowrap;">{{ de.name }}</td>
 					<td rowspan="{{de.items.length}}">{{ de.status }}</td>
 					<td rowspan="{{de.items.length}}">{{ de.posting_date }}</td>
@@ -275,6 +287,7 @@
 					<td style="text-align:right;">{{ de_item.pieces }}</td>
 					<td>{{ de_item.warehouse }}</td>
 				</tr>
+				{% i++ %}
 				{% endfor %}
 			{% endfor %}
 		</tbody>
@@ -318,9 +331,10 @@
 		</thead>
 		<tbody>
 			{% for si in sales_invoice_details %}
+				{% i = 0 %}
 				{% for si_item in si.items %}
 				<tr>
-					{% if (si_item.idx === 1) { %}
+					{% if (i === 0) { %}
 					<td rowspan="{{si.items.length}}" style="white-space:nowrap;">{{ si.name }}</td>
 					<td rowspan="{{si.items.length}}">{{ si.status }}</td>
 					<td rowspan="{{si.items.length}}">{{ si.posting_date }}</td>
@@ -333,6 +347,7 @@
 					<td style="text-align:right;">{{ si_item.net_amount }}</td>
 					<td>{{ si_item.warehouse }}</td>
 				</tr>
+				{% i++ %}
 				{% endfor %}
 			{% endfor %}
 		</tbody>
@@ -382,9 +397,10 @@
 		</thead>
 		<tbody>
 			{% for si in sales_return_details %}
+				{% i = 0 %}
 				{% for si_item in si.items %}
 				<tr>
-					{% if (si_item.idx === 1) { %}
+					{% if (i === 0) { %}
 					<td rowspan="{{si.items.length}}" style="white-space:nowrap;">{{ si.name }}</td>
 					<td rowspan="{{si.items.length}}">{{ si.status }}</td>
 					<td rowspan="{{si.items.length}}">{{ si.posting_date }}</td>
@@ -400,6 +416,7 @@
 					<td style="text-align:right;">{{ si_item.net_amount }}</td>
 					<td>{{ si_item.warehouse }}</td>
 				</tr>
+				{% i++ %}
 				{% endfor %}
 			{% endfor %}
 		</tbody>
@@ -447,9 +464,10 @@
 		</thead>
 		<tbody>
 			{% for pe in paymeny_entry_details %}
+				{% i = 0 %}
 				{% for pe_ref in pe.references %}
 				<tr>
-					{% if (pe_ref.idx === 1) { %}
+					{% if (i === 0) { %}
 					<td rowspan="{{pe.references.length}}" style="white-space:nowrap;">{{ pe.name }}</td>
 					<td rowspan="{{pe.references.length}}">{{ pe.mode_of_payment }}</td>
 					<td rowspan="{{pe.references.length}}">{{ pe.payment_type }}</td>
@@ -460,6 +478,7 @@
 					<td style="text-align:right;">{{ pe_ref.outstanding_amount }}</td>
 					<td style="text-align:right;">{{ pe_ref.allocated_amount }}</td>
 				</tr>
+				{% i++ %}
 				{% endfor %}
 			{% endfor %}
 		</tbody>
