@@ -203,6 +203,9 @@ def get_basic_details(args, item):
 	if args.get('doctype') == "Material Request":
 		material_request_type = frappe.db.get_value('Material Request',
 			args.get('name'), 'material_request_type')
+	
+	if not material_request_type:
+		material_request_type = 'Purchase'
 
 	#Set the UOM to the Default Sales UOM or Default Purchase UOM if configured in the Item Master
 	if not args.uom:
