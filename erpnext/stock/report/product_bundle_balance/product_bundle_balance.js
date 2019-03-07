@@ -1,0 +1,65 @@
+// Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors and contributors
+// For license information, please see license.txt
+
+frappe.query_reports["Product Bundle Balance"] = {
+	"filters": [
+		{
+			"fieldname":"date",
+			"label": __("Date"),
+			"fieldtype": "Date",
+			"width": "80",
+			"reqd": 1,
+			"default": frappe.datetime.get_today(),
+		},
+		{
+			"fieldname": "item_code",
+			"label": __("Item"),
+			"fieldtype": "Link",
+			"width": "80",
+			"options": "Item",
+			"get_query": function() {
+				return {
+					query: "erpnext.controllers.queries.item_query",
+					filters: {"is_stock_item": 0}
+				}
+			}
+		},
+		{
+			"fieldname": "item_group",
+			"label": __("Item Group"),
+			"fieldtype": "Link",
+			"width": "80",
+			"options": "Item Group"
+		},
+		{
+			"fieldname":"brand",
+			"label": __("Brand"),
+			"fieldtype": "Link",
+			"options": "Brand"
+		},
+		{
+			"fieldname": "warehouse",
+			"label": __("Warehouse"),
+			"fieldtype": "Link",
+			"width": "80",
+			"options": "Warehouse"
+		},
+	],
+	"tree": true,
+	"name_field": "item_code",
+	"parent_field": "parent_item",
+	"initial_depth": 3,
+	"formatter": function(row, cell, value, columnDef, dataContext, default_formatter) {
+		if (columnDef.df.fieldname=="item_code") {
+			columnDef.df.is_tree = true;
+		}
+
+		value = default_formatter(row, cell, value, columnDef, dataContext);
+
+		if (!dataContext.parent_item) {
+			var $value = $(value).css("font-weight", "bold");
+			value = $value.wrap("<p></p>").parent().html();
+		}
+		return value;
+	}
+}
