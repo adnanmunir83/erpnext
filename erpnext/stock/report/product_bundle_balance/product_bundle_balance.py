@@ -116,7 +116,7 @@ def get_items(filters):
 			where pb.new_item_code in ({0})
 		""".format(", ".join(["%s"] * len(parent_items))), parent_items, as_dict=1)
 	else:
-		child_item_details = frappe._dict()
+		child_item_details = []
 
 	child_items = set()
 	for d in child_item_details:
