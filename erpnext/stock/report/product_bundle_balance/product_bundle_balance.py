@@ -9,7 +9,7 @@ from erpnext.stock.report.stock_ledger.stock_ledger import get_item_group_condit
 from six import iteritems
 
 
- def execute(filters=None):
+def execute(filters=None):
 	if not filters:
 		filters = frappe._dict()
 
@@ -72,7 +72,7 @@ from six import iteritems
  	return columns, data
 
 
- def get_columns():
+def get_columns():
 	columns = [
 		{"fieldname": "item_code", "label": _("Item"), "fieldtype": "Link", "options": "Item", "width": 300},
 		{"fieldname": "warehouse", "label": _("Warehouse"), "fieldtype": "Link", "options": "Warehouse", "width": 100},
@@ -88,7 +88,7 @@ from six import iteritems
 	return columns
 
 
- def get_items(filters):
+def get_items(filters):
 	pb_details = frappe._dict()
 	item_details = frappe._dict()
 
@@ -128,7 +128,7 @@ from six import iteritems
 	return item_details, pb_details, parent_items, child_items
 
 
- def get_stock_balance(filters, items):
+def get_stock_balance(filters, items):
 	sle = get_stock_ledger_entries(filters, items)
 	stock_balance = frappe._dict()
 	for d in sle:
@@ -136,7 +136,7 @@ from six import iteritems
 	return stock_balance
 
 
- def get_stock_ledger_entries(filters, items):
+def get_stock_ledger_entries(filters, items):
 	if not items:
 		return []
 
@@ -156,7 +156,7 @@ from six import iteritems
 		where sle2.name is null and sle.docstatus < 2 %s %s""" % (item_conditions_sql, conditions), as_dict=1)
 
 
- def get_parent_item_conditions(filters):
+def get_parent_item_conditions(filters):
 	conditions = []
 
  	if filters.get("item_code"):
@@ -171,7 +171,7 @@ from six import iteritems
 	return "and {0}".format(conditions) if conditions else ""
 
 
- def get_sle_conditions(filters):
+def get_sle_conditions(filters):
 	conditions = ""
 	if not filters.get("date"):
 		frappe.throw(_("'Date' is required"))
