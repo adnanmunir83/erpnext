@@ -43,21 +43,20 @@ def execute(filters=None):
 			}
 
 			child_rows = []
-			for child_item in required_items:
-				child_item_detail = item_details[child_item.item_code]
-				child_item_balance = stock_balance.get(child_item.item_code, frappe._dict()).get(warehouse, frappe._dict())
+			for child_item_detail in required_items:
+				child_item_balance = stock_balance.get(child_item_detail.item_code, frappe._dict()).get(warehouse, frappe._dict())
 				child_row = {
 					"indent": 1,
 					"parent_item": parent_item,
-					"item_code": child_item.item_code,
+					"item_code": child_item_detail.item_code,
 					"item_name": child_item_detail.item_name,
 					"item_group": child_item_detail.item_group,
 					"brand": child_item_detail.brand,
 					"description": child_item_detail.description,
 					"warehouse": warehouse,
 					"uom": child_item_detail.uom,
-					"actual_qty": flt(child_item_balance.qty_after_transaction) / child_item.qty,
-					"minimum_qty": child_item.qty,
+					"actual_qty": flt(child_item_balance.qty_after_transaction) / child_item_detail.qty,
+					"minimum_qty": child_item_detail.qty,
 					"company": company,
 				}
 				child_row["bundle_qty"] = child_row["actual_qty"] // child_row["minimum_qty"]
@@ -82,7 +81,7 @@ def get_columns():
 		{"fieldname": "minimum_qty", "label": _("Minimum Qty"), "fieldtype": "Float", "width": 100},
 		{"fieldname": "item_group", "label": _("Item Group"), "fieldtype": "Link", "options": "Item Group", "width": 100},
 		{"fieldname": "brand", "label": _("Brand"), "fieldtype": "Link", "options": "Brand", "width": 100},
-		{"fieldname": "description", "label": _("Description"), "fieldtype": "Data", "width": 140},
+		{"fieldname": "description", "label": _("Description"), "width": 140},
 		{"fieldname": "company", "label": _("Company"), "fieldtype": "Link", "options": "Company", "width": 100}
 	]
 	return columns
@@ -94,7 +93,7 @@ def get_items(filters):
 
 	conditions = get_parent_item_conditions(filters)
 	parent_item_details = frappe.db.sql("""
-		select item.name as item_code, item.item_name, item.description, item.item_group, item.brand, item.stock_uom
+		select item.name as item_code, item.item_name, pb.description, item.item_group, item.brand, item.stock_uom
 		from `tabItem` item
 		inner join `tabProduct Bundle` pb on pb.new_item_code = item.name
 		where ifnull(item.disabled, 0) = 0 {0}
@@ -120,9 +119,10 @@ def get_items(filters):
 
 	child_items = set()
 	for d in child_item_details:
-		pb_details.setdefault(d.parent_item, []).append(d)
-		child_items.add(d.item_code)
-		item_details[d.item_code] = d
+		if d.item_code != d.parent_item:
+			pb_details.setdefault(d.parent_item, []).append(d)
+			child_items.add(d.item_code)
+			item_details[d.item_code] = d
 
 	child_items = list(child_items)
 	return item_details, pb_details, parent_items, child_items
