@@ -51,15 +51,15 @@ erpnext.SalesAnalytics = frappe.views.TreeGridReport.extend({
 				parent_field: "parent_item_group",
 				item_key: "item_code",
 				formatter: function(item) {
-					return item.name;
+					return item.item_name!= item.name? item.item_name + " (" + item.name + ")" : item.name;
 				}
 			},
 			"Item": {
 				label: __("Item"),
 				show: false,
 				item_key: "item_code",
-				formatter: function(item) {
-					return item.name;
+				formatter: function(item) {					
+					return item.item_name!= item.name? item.item_name + " (" + item.name + ")" : item.name;
 				}
 			},
 			"Territory": {
