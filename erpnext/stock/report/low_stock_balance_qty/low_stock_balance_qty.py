@@ -66,6 +66,8 @@ def execute(filters=None):
 			report_data = [item, item_map[item]["item_name"],
 				item_map[item]["item_group"],
 				item_map[item]["brand"],
+				item_map[item]["default_supplier"],
+				item_map[item]["cust_supplier_name"],
 				item_map[item]["stock_uom"], qty_dict.opening_qty,
 				qty_dict.in_qty,			
 				qty_dict.out_qty,			
@@ -98,6 +100,8 @@ def get_columns():
 		_("Brand")+":Link/Brand:90",
 	#	_("Description")+"::140",
 	#	_("Warehouse")+":Link/Warehouse:100",
+		_("Supplier Code")+":Link/Supplier:100",
+		_("Supplier")+"::140",
 		_("Stock UOM")+":Link/UOM:90",
 		_("Opening Qty")+":Float:100",
 	#	_("Opening Value")+":Float:110",
@@ -249,7 +253,7 @@ def get_item_details(items, sle, filters):
 
 	if items:
 		for item in frappe.db.sql("""
-			select name, item_name, description, item_group, brand, stock_uom , boxes, pieces
+			select name, item_name, description,default_supplier, cust_supplier_name, item_group, brand, stock_uom , boxes, pieces
 			from `tabItem`
 			where name in ({0}) and ifnull(disabled, 0) = 0
 			""".format(', '.join(['"' + frappe.db.escape(i, percent=False) + '"' for i in items])), as_dict=1):
