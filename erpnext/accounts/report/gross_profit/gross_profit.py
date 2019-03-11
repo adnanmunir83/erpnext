@@ -18,11 +18,11 @@ def execute(filters=None):
 	data = []
 
 	group_wise_columns = frappe._dict({
-		"invoice": ["parent", "customer", "customer_group", "posting_date","item_code", "item_name","item_group", "brand", "description", \
-			"warehouse", "qty", "base_rate", "buying_rate", "base_amount",
-			"buying_amount", "gross_profit", "gross_profit_percent", "project"],
-		"item_code": ["item_code", "item_name", "brand", "description", "qty", "base_rate",
-			"buying_rate", "base_amount", "buying_amount", "gross_profit", "gross_profit_percent"],
+		"invoice": ["parent", "customer", "customer_name", "customer_group", "posting_date", "item_code", "item_name",
+			"item_group", "brand", "description", "size", "item_color", "texture", "type", "warehouse", "qty",
+			"base_rate", "buying_rate", "base_amount", "buying_amount", "gross_profit", "gross_profit_percent", "project"],
+		"item_code": ["item_code", "item_name", "brand", "description", "size", "item_color", "texture", "type", "qty",
+			"base_rate", "buying_rate", "base_amount", "buying_amount", "gross_profit", "gross_profit_percent"],
 		"warehouse": ["warehouse", "qty", "base_rate", "buying_rate", "base_amount", "buying_amount",
 			"gross_profit", "gross_profit_percent"],
 		"territory": ["territory", "qty", "base_rate", "buying_rate", "base_amount", "buying_amount",
@@ -31,11 +31,11 @@ def execute(filters=None):
 			"gross_profit", "gross_profit_percent"],
 		"item_group": ["item_group", "qty", "base_rate", "buying_rate", "base_amount", "buying_amount",
 			"gross_profit", "gross_profit_percent"],
-		"customer": ["customer", "customer_group", "qty", "base_rate", "buying_rate", "base_amount", "buying_amount",
-			"gross_profit", "gross_profit_percent"],
+		"customer": ["customer", "customer_name", "customer_group", "qty", "base_rate", "buying_rate", "base_amount",
+			"buying_amount", "gross_profit", "gross_profit_percent"],
 		"customer_group": ["customer_group", "qty", "base_rate", "buying_rate", "base_amount", "buying_amount",
 			"gross_profit", "gross_profit_percent"],
-		"sales_person": ["sales_person", "allocated_amount", "qty", "base_rate", "buying_rate", "base_amount", "buying_amount",
+		"salesman": ["salesman", "qty", "base_rate", "buying_rate", "base_amount", "buying_amount",
 			"gross_profit", "gross_profit_percent"],
 		"project": ["project", "base_amount", "buying_amount", "gross_profit", "gross_profit_percent"],
 		"territory": ["territory", "base_amount", "buying_amount", "gross_profit", "gross_profit_percent"]
@@ -61,6 +61,10 @@ def get_columns(group_wise_columns, filters):
 		"posting_time": _("Posting Time"),
 		"item_code": _("Item Code") + ":Link/Item",
 		"item_name": _("Item Name"),
+		"item_color": _("Color"),
+		"size": _("Size"),
+		"texture": _("Texture"),
+		"type": _("Type"),
 		"item_group": _("Item Group") + ":Link/Item Group",
 		"brand": _("Brand"),
 		"description": _("Description"),
@@ -73,9 +77,11 @@ def get_columns(group_wise_columns, filters):
 		"gross_profit": _("Gross Profit") + ":Currency/currency",
 		"gross_profit_percent": _("Gross Profit %") + ":Percent",
 		"project": _("Project") + ":Link/Project",
-		"sales_person": _("Sales person"),
+		"salesman": _("Salesman") + ":Link/User:150",
+		"sales_person": _("Sales Person"),
 		"allocated_amount": _("Allocated Amount") + ":Currency/currency",
 		"customer": _("Customer") + ":Link/Customer",
+		"customer_name": _("Customer Name"),
 		"customer_group": _("Customer Group") + ":Link/Customer Group",
 		"territory": _("Territory") + ":Link/Territory"
 	})
@@ -304,18 +310,21 @@ class GrossProfitGenerator(object):
 				`tabSales Invoice Item`.parenttype, `tabSales Invoice Item`.parent,
 				`tabSales Invoice`.posting_date, `tabSales Invoice`.posting_time,
 				`tabSales Invoice`.project, `tabSales Invoice`.update_stock,
-				`tabSales Invoice`.customer, `tabSales Invoice`.customer_group,
+				`tabSales Invoice`.customer, `tabSales Invoice`.customer_name, `tabSales Invoice`.customer_group,
 				`tabSales Invoice`.territory, `tabSales Invoice Item`.item_code,
 				`tabSales Invoice Item`.item_name, `tabSales Invoice Item`.description,
 				`tabSales Invoice Item`.warehouse, `tabSales Invoice Item`.item_group,
 				`tabSales Invoice Item`.brand, `tabSales Invoice Item`.dn_detail,
 				`tabSales Invoice Item`.delivery_note, `tabSales Invoice Item`.stock_qty as qty,
 				`tabSales Invoice Item`.base_net_rate, `tabSales Invoice Item`.base_net_amount,
-				`tabSales Invoice Item`.name as "item_row", `tabSales Invoice`.is_return
+				`tabSales Invoice Item`.name as "item_row", `tabSales Invoice`.is_return,
+				`tabSales Invoice`.sales_order_owner as salesman,
+				`tabItem`.size, `tabItem`.item_color, `tabItem`.texture, `tabItem`.grade_tone_desc, `tabItem`.type
 				{sales_person_cols}
 			from
 				`tabSales Invoice` inner join `tabSales Invoice Item`
 					on `tabSales Invoice Item`.parent = `tabSales Invoice`.name
+				inner join `tabItem` on `tabItem`.name = `tabSales Invoice Item`.item_code
 				{sales_team_table}
 			where
 				`tabSales Invoice`.docstatus=1 {conditions} {match_cond}
