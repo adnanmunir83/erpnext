@@ -501,8 +501,20 @@ def make_project(source_name, target_doc=None):
 @frappe.whitelist()
 def make_delivery_note(source_name, target_doc=None):
 	def set_missing_values(source, target):
-		if (not source.allow_delivery and source.advance_paid < source.rounded_total):
-			frappe.throw(_('Not allowed to create the Delivery Note before Payment'))
+		if not source.allow_delivery:
+			if source.advance_paid < source.rounded_total:
+				frappe.throw(_('Not allowed to create the Sales Invoice before Payment'))
+			else:
+				cheque_payments = frappe.db.sql("""
+					select pe.name
+					from `tabPayment Entry Reference` pref
+					inner join `tabPayment Entry` pe on pe.name = pref.parent
+					inner join `tabMode of Payment` mop on mop.name = pe.mode_of_payment
+					where pref.reference_doctype = 'Sales Order' and pref.reference_name = %s and mop.type = 'Bank'
+				""", source.name)
+				if cheque_payments:
+					frappe.throw(_("Payment made by cheque. Delivery requires approval."))
+
 		target.ignore_pricing_rule = 1
 		target.run_method("set_missing_values")
 		target.run_method("set_po_nos")
@@ -557,8 +569,20 @@ def make_delivery_note(source_name, target_doc=None):
 @frappe.whitelist()
 def make_sales_invoice(source_name, target_doc=None, ignore_permissions=False):
 	def postprocess(source, target):
-		if (not source.allow_delivery and source.advance_paid < source.rounded_total):
-			frappe.throw(_('Not allowed to create the Sales Invoice before Payment'))
+		if not source.allow_delivery:
+			if source.advance_paid < source.rounded_total:
+				frappe.throw(_('Not allowed to create the Sales Invoice before Payment'))
+			else:
+				cheque_payments = frappe.db.sql("""
+					select pe.name
+					from `tabPayment Entry Reference` pref
+					inner join `tabPayment Entry` pe on pe.name = pref.parent
+					inner join `tabMode of Payment` mop on mop.name = pe.mode_of_payment
+					where pref.reference_doctype = 'Sales Order' and pref.reference_name = %s and mop.name like '%%cheque%%'
+				""", source.name)
+				if cheque_payments:
+					frappe.throw(_("Payment made by cheque. Delivery requires approval."))
+
 		set_missing_values(source, target)
 		adjust_taxes_and_charges(source, target)
 		#Get the advance paid Journal Entries in Sales Invoice Advance
