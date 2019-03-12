@@ -1,0 +1,34 @@
+<h2 class="text-center">{%= __("Customer Open Invoices") %}</h2>
+<h4 class="text-center">
+	{% if (filters.company) { %}
+		{%= filters.company %}	
+	{% } %}
+</h4>
+<h5 class="text-center">   		
+		{%= filters.customer %} 
+</h5>
+<hr>
+<table class="table table-bordered">
+	<thead>
+		<tr>
+			<th>{%= __("Date") %}</th>		
+			<th>{%= __("Description") %}</th>
+			<th>{%= __("Outstanding") %}</th>		
+			<th>{%= __("Balance") %}</th>			
+		</tr>
+	</thead>
+	<tbody>
+		{%  for(var i=0, l=data.length; i<l; i++) { %}
+		<tr>			
+			<td >{%= data[i][__("Date")] %}</td>			
+			<td >{%= data[i][__("Invoice Desc")] %}
+			<br>{%= data[i][__("Invoice Items")] %}
+			<br>{%= data[i][__("Invoice Tax")] %}
+			</td>			
+			<td >{%= format_currency(data[i][__("Outstanding")]) %}</td>	
+			<td >{%= format_currency(data[i][__("Balance")]) %}</td>				
+		</tr>
+		{%  } %}
+	</tbody>
+</table>
+<p class="text-right text-muted">Printed On {%= dateutil.str_to_user(dateutil.get_datetime_as_string()) %}</p>

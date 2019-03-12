@@ -1,0 +1,38 @@
+{
+ "add_total_row": 1, 
+ "apply_user_permissions": 1, 
+ "creation": "2018-12-26 16:13:00.841164", 
+ "disabled": 0, 
+ "docstatus": 0, 
+ "doctype": "Report", 
+ "idx": 0, 
+ "is_standard": "Yes", 
+ "javascript": "frappe.query_reports[\"Invoices by Customer\"] = {\n    \"filters\": [  \n\t{\n            \"fieldname\":\"company\",\n            \"label\": __(\"Company\"),\n            \"fieldtype\": \"Link\",\n\t     \"options\":\"Company\",\n\t\t\"default\": \"SILVER SEA TRADING LLC\",\t      \n            \"reqd\": 1\n        } ,\t\n\t{\n            \"fieldname\":\"customer\",\n            \"label\": __(\"Customer\"),\n            \"fieldtype\": \"Link\",\n\t     \"options\":\"Customer\",\n\t\"default\": \"Ability Trading\",\t      \n            \"reqd\": 1\n        } \t\t\n]}", 
+ "letter_head": "SST", 
+ "modified": "2019-03-12 16:07:57.644315", 
+ "modified_by": "Administrator", 
+ "module": "Accounts", 
+ "name": "Invoices by Customer", 
+ "owner": "Administrator", 
+ "query": "select \nposting_Date \"Date:Date:100\",\nCONCAT_WS(' Amount ',ts.name,round(ts.grand_total,2)) \"Invoice Desc:Data:100\",\ngroup_concat(tsi.item_code,', ',round(tsi.qty,0),' @ ',round(tsi.net_rate,2), ' = ',round(tsi.amount,2) order by tsi.idx SEPARATOR ' <br> ') \"Invoice Items:Data:100\",\ngroup_concat(distinct tac.description, ' = ' , round(tac.tax_amount,2)) \"Invoice Tax:Data:100\",\noutstanding_amount \"Outstanding:Currency:100\",\n@sum := @sum + outstanding_amount  \"Balance:Currency:100\"\n\nfrom `tabSales Invoice` ts  inner join `tabSales Invoice Item` tsi on ts.name=tsi.parent\nleft join `tabSales Taxes and Charges` tac on ts.name=tac.parent\njoin ( select @sum:=0 ) as tx\nwhere \n \nts.grand_total-1 > ts.paid_amount\nand ts.outstanding_amount >0\nand ts.docstatus=1\nand ts.customer = %(customer)s\nand ts.company = %(company)s\ngroup by ts.name\norder by ts.name", 
+ "ref_doctype": "Sales Invoice", 
+ "report_name": "Invoices by Customer", 
+ "report_type": "Query Report", 
+ "roles": [
+  {
+   "role": "Accounts User"
+  }, 
+  {
+   "role": "Auditor"
+  }, 
+  {
+   "role": "Sales User"
+  }, 
+  {
+   "role": "Purchase User"
+  }, 
+  {
+   "role": "Accounts Manager"
+  }
+ ]
+}
