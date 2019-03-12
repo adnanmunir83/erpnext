@@ -19,10 +19,18 @@ def execute(filters=None):
 
 	group_wise_columns = frappe._dict({
 		"invoice": ["parent", "customer", "customer_name", "customer_group", "posting_date", "item_code", "item_name",
-			"item_group", "brand", "description", "size", "item_color", "texture", "type", "warehouse", "qty",
+			"item_group", "brand", "description", "item_size", "item_color", "item_texture", "item_type", "warehouse", "qty",
 			"base_rate", "buying_rate", "base_amount", "buying_amount", "gross_profit", "gross_profit_percent", "project"],
-		"item_code": ["item_code", "item_name", "brand", "description", "size", "item_color", "texture", "type", "qty",
+		"item_code": ["item_code", "item_name", "brand", "description", "item_size", "item_color", "item_texture", "item_type", "qty",
 			"base_rate", "buying_rate", "base_amount", "buying_amount", "gross_profit", "gross_profit_percent"],
+		"item_size": ["item_size", "qty", "base_rate", "buying_rate", "base_amount", "buying_amount",
+			"gross_profit", "gross_profit_percent"],
+		"item_color": ["item_color", "qty", "base_rate", "buying_rate", "base_amount", "buying_amount",
+			"gross_profit", "gross_profit_percent"],
+		"item_texture": ["item_texture", "qty", "base_rate", "buying_rate", "base_amount", "buying_amount",
+			"gross_profit", "gross_profit_percent"],
+		"item_type": ["item_type", "qty", "base_rate", "buying_rate", "base_amount", "buying_amount",
+			"gross_profit", "gross_profit_percent"],
 		"warehouse": ["warehouse", "qty", "base_rate", "buying_rate", "base_amount", "buying_amount",
 			"gross_profit", "gross_profit_percent"],
 		"territory": ["territory", "qty", "base_rate", "buying_rate", "base_amount", "buying_amount",
@@ -37,8 +45,7 @@ def execute(filters=None):
 			"gross_profit", "gross_profit_percent"],
 		"salesman": ["salesman", "qty", "base_rate", "buying_rate", "base_amount", "buying_amount",
 			"gross_profit", "gross_profit_percent"],
-		"project": ["project", "base_amount", "buying_amount", "gross_profit", "gross_profit_percent"],
-		"territory": ["territory", "base_amount", "buying_amount", "gross_profit", "gross_profit_percent"]
+		"project": ["project", "base_amount", "buying_amount", "gross_profit", "gross_profit_percent"]
 	})
 
 	columns = get_columns(group_wise_columns, filters)
@@ -62,9 +69,9 @@ def get_columns(group_wise_columns, filters):
 		"item_code": _("Item Code") + ":Link/Item",
 		"item_name": _("Item Name"),
 		"item_color": _("Color"),
-		"size": _("Size"),
-		"texture": _("Texture"),
-		"type": _("Type"),
+		"item_size": _("Size"),
+		"item_texture": _("Texture"),
+		"item_type": _("Type"),
 		"item_group": _("Item Group") + ":Link/Item Group",
 		"brand": _("Brand"),
 		"description": _("Description"),
@@ -319,7 +326,7 @@ class GrossProfitGenerator(object):
 				`tabSales Invoice Item`.base_net_rate, `tabSales Invoice Item`.base_net_amount,
 				`tabSales Invoice Item`.name as "item_row", `tabSales Invoice`.is_return,
 				`tabSales Invoice`.sales_order_owner as salesman,
-				`tabItem`.size, `tabItem`.item_color, `tabItem`.texture, `tabItem`.grade_tone_desc, `tabItem`.type
+				`tabItem`.size as item_size, `tabItem`.item_color, `tabItem`.texture as item_texture, `tabItem`.type as item_type
 				{sales_person_cols}
 			from
 				`tabSales Invoice` inner join `tabSales Invoice Item`
