@@ -84,7 +84,7 @@ def get_columns(group_wise_columns, filters):
 		"gross_profit": _("Gross Profit") + ":Currency/currency",
 		"gross_profit_percent": _("Gross Profit %") + ":Percent",
 		"project": _("Project") + ":Link/Project",
-		"salesman": _("Salesman") + ":Link/User:150",
+		"salesman": _("Salesman") + ":User:200",
 		"sales_person": _("Sales Person"),
 		"allocated_amount": _("Allocated Amount") + ":Currency/currency",
 		"customer": _("Customer") + ":Link/Customer",
@@ -325,7 +325,7 @@ class GrossProfitGenerator(object):
 				`tabSales Invoice Item`.delivery_note, `tabSales Invoice Item`.stock_qty as qty,
 				`tabSales Invoice Item`.base_net_rate, `tabSales Invoice Item`.base_net_amount,
 				`tabSales Invoice Item`.name as "item_row", `tabSales Invoice`.is_return,
-				`tabSales Invoice`.sales_order_owner as salesman,
+				(select full_name from tabUser where name=`tabSales Invoice`.sales_order_owner) as salesman,
 				`tabItem`.size as item_size, `tabItem`.item_color, `tabItem`.texture as item_texture, `tabItem`.type as item_type
 				{sales_person_cols}
 			from
