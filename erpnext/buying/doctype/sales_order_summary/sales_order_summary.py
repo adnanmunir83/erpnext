@@ -39,6 +39,7 @@ def get_related_documents(doctype, docname):
 
 			if linked_doctype == "Sales Invoice":
 				si_list.append(doc_obj.name)
+
 			if linked_doctype == "Sales Invoice" and doc_obj.is_return:
 				document_details["Sales Return"].append(doc_obj.as_dict())
 			else:
@@ -49,14 +50,40 @@ def get_related_documents(doctype, docname):
 			d.remaining_qty = flt(d.qty) - flt(d.delivered_qty) - flt(d.returned_qty)
 
 	# include the Payment Entry against invoice
+	pe_names = map(lambda d: d.name, document_details["Payment Entry"] or [])
 	if si_list:
 		payment_entry = frappe.db.sql(
 			'''select distinct parent as name from `tabPayment Entry Reference` where docstatus=1 and reference_name in (%s)''' %
 			', '.join(['%s'] * len(si_list)), tuple(si_list), as_dict=1)
 		for pe in payment_entry:
-			if pe.name not in document_details["Payment Entry"]:
+			if pe.name not in pe_names:
 				pe_doc = frappe.get_doc("Payment Entry", pe.name).as_dict()
 				document_details["Payment Entry"].append(pe_doc)
+
+	# remove payment references to other documents and calculate total paid
+	positive_payment_total = 0
+	negative_payment_total = 0
+	for pe in document_details["Payment Entry"]:
+		new_list = []
+		for pref in pe.references:
+			if (pref.reference_doctype == doctype and pref.reference_name == docname) \
+					or (pref.reference_doctype == "Sales Invoice" and pref.reference_name in si_list):
+				new_list.append(pref)
+
+				if flt(pref.allocated_amount) < 0:
+					negative_payment_total -= flt(pref.allocated_amount)
+				else:
+					positive_payment_total += flt(pref.allocated_amount)
+		pe.references = new_list
+
+	sales_order_total = document_details["Sales Order"][0].rounded_total
+	sales_return_total = -sum(map(lambda d: d.rounded_total, document_details["Sales Return"])) if "Sales Return" in document_details else 0.0
+	total_outstanding_amount = positive_payment_total - negative_payment_total - sales_order_total + sales_return_total
+
+	document_details["Sales Order"][0].total_payment_amount = positive_payment_total
+	document_details["Sales Order"][0].total_refund_amount = negative_payment_total
+	document_details["Sales Order"][0].total_return_amount = sales_return_total
+	document_details["Sales Order"][0].total_outstanding_amount = total_outstanding_amount
 
 	return document_details
 
