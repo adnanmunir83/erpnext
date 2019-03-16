@@ -82,6 +82,6 @@ def execute(filters=None):
 			else:
 				so.payment += gle.amount
 
- 		so.pending = so.total - so.payment - so.returns #+ so.return_payment
+ 		so.pending = so.total - so.payment - so.returns + so.return_payment
 
  	return columns, sales_orders
