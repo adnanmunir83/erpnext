@@ -133,7 +133,9 @@ class UnbilledCustomerOrdersReport(object):
 	def get_gl_entries(self):
 		self.gl_entries = frappe.db.sql("""
 			select
-				posting_date, voucher_type, voucher_no, sum(debit) as debit, sum(credit) as credit,
+				posting_date, voucher_type, voucher_no,
+				if(sum(debit-credit) > 0, sum(debit-credit), 0) as debit,
+				if(sum(debit-credit) < 0, -sum(debit-credit), 0) as credit,
 				GROUP_CONCAT(DISTINCT against_voucher_type SEPARATOR ', ') as against_voucher_type,
 				GROUP_CONCAT(DISTINCT against_voucher SEPARATOR ', ') as against_voucher
 			from
