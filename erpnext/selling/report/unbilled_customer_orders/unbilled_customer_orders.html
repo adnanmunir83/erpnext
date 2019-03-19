@@ -20,6 +20,7 @@
 			<th>{%= __("Voucher Type") %}</th>
 			<th>{%= __("Voucher") %}</th>
 			<th>{%= __("Against Voucher") %}</th>
+			<th>{%= __("Sales Order") %}</th>
 			<th>{%= __("Debit") %}</th>
 			<th>{%= __("Credit") %}</th>
 			<th>{%= __("Balance") %}</th>			
@@ -31,7 +32,8 @@
 				<td >{%= data[i].posting_date %}</td>
 				<td >{%= data[i].voucher_type %}</td>
 				<td >{%= data[i].voucher_no %}</td>
-				<td >{%= data[i].against_voucher %}</td>				
+				<td >{%= data[i].against_voucher %}</td>	
+				<td >{%= data[i].so %}</td>			
 				<td >{%= format_currency(data[i].debit) %}</td>
 				<td >{%= format_currency(data[i].credit) %}</td>	
 				<td >{%= format_currency(data[i].balance) %}</td>				
