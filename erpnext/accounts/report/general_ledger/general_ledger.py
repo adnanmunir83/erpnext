@@ -101,7 +101,8 @@ def get_gl_entries(filters):
 	gl_entries = frappe.db.sql("""
 		select
 			posting_date, account, party_type, party,
-			sum(debit) as debit, sum(credit) as credit,
+			if(sum(debit-credit) > 0, sum(debit-credit), 0) as debit,
+			if(sum(debit-credit) < 0, -sum(debit-credit), 0) as credit,
 			voucher_type, voucher_no, cost_center, project,
 			against_voucher_type, against_voucher,
 			remarks, against, is_opening {select_fields}
