@@ -548,12 +548,14 @@ frappe.custom_mutli_add_dialog = function(frm) {
 
 			customItemDetailsTemplate += custom_warehouse_template1;
 			for (let item of sortedItems) {
-				item = item[0];
+				item = item[0];			
 				let actual_qty_sqm = item_details[item]["item_stock_totals"]["actual_qty"];
-				let actual_qty_box = Math.floor( actual_qty_sqm / item_details[item]["uom_box"] );
+				let actual_qty_box = actual_qty_sqm / item_details[item]["uom_box"] ;
+				actual_qty_box = Math.floor(actual_qty_box + .00001);
 				let actual_qty_pieces = Math.round(actual_qty_sqm / (item_details[item]["uom_box"] / item_details[item]["uom_pieces"])) % item_details[item]["uom_pieces"];
 				let reserved_qty_sqm = item_details[item]["item_stock_totals"]["reserved_qty"];
-				let reserved_qty_box = Math.floor( reserved_qty_sqm / item_details[item]["uom_box"] );
+				let reserved_qty_box = reserved_qty_sqm / item_details[item]["uom_box"] ;
+				reserved_qty_box = Math.floor(reserved_qty_box + .00001);
 				let reserved_qty_pieces = Math.round(reserved_qty_sqm / (item_details[item]["uom_box"] / item_details[item]["uom_pieces"])) % item_details[item]["uom_pieces"];
 				customItemDetailsTemplate += `
 					<tr data-item=${item} class="custom-item-row">
