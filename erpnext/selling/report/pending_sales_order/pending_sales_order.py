@@ -92,7 +92,7 @@ def execute(filters=None):
 			else:
 				so.payment += gle.amount
 
- 		so.pending = so.total - so.payment - so.returns  #+ so.return_payment
+ 		so.pending = so.total - so.payment - so.returns  + so.return_payment
 		if so.pending > 1 :
 			data.append(so)
 
