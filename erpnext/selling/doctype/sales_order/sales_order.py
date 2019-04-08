@@ -28,8 +28,10 @@ class SalesOrder(SellingController):
 
 	def validate(self):
 		super(SalesOrder, self).validate()
-
+		# Start Tiles Business Changes
 		self.validate_date()
+		self.validate_rate()
+		# End Tiles Business Changes
 		self.validate_order_type()
 		self.validate_delivery_date()
 		self.validate_proj_cust()
@@ -48,6 +50,13 @@ class SalesOrder(SellingController):
 
 		if not self.billing_status: self.billing_status = 'Not Billed'
 		if not self.delivery_status: self.delivery_status = 'Not Delivered'
+
+	# Tiles Business Changes
+	def validate_rate(self):
+		for d in self.get("items"):
+			if not d.rate and d.rate < 1:
+				frappe.throw(_("Item #{0}: Rate Cannot be 0.")
+					.format(d.item_code))
 
 	def validate_po(self):
 		# validate p.o date v/s delivery date

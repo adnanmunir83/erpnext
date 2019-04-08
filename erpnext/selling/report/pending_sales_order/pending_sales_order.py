@@ -15,25 +15,25 @@ def execute(filters=None):
 	
 	#frappe.throw(_(customer_filter))
 	columns = [
-		{"fieldname": "sales_order", "label": "ID", "fieldtype": "Link", "options": "Sales Order", "width": 100},
-		{"fieldname": "salesman", "label": "Salesman", "fieldtype": "Data", "width": 100},
-		{"fieldname": "customer", "label": "Customer", "fieldtype": "Link", "options": "Customer", "width": 100},
-		{"fieldname": "customer_name", "label": "Customer Name", "fieldtype": "Data", "width": 100},
-		{"fieldname": "transaction_date", "label": "Date", "fieldtype": "Date", "width": 100},
-		{"fieldname": "total", "label": "Total", "fieldtype": "Currency", "width": 100},
-		{"fieldname": "payment", "label": "Payment", "fieldtype": "Currency", "width": 100},
-		{"fieldname": "returns", "label": "Returns", "fieldtype": "Currency", "width": 100},
-	#	{"fieldname": "return_payment", "label": "Returns Payment", "fieldtype": "Currency", "width": 100},
-		{"fieldname": "pending", "label": "Pending", "fieldtype": "Currency", "width": 100},
-		{"fieldname": "status", "label": "Status", "fieldtype": "Data", "width": 100},
-		{"fieldname": "delivery_status", "label": "Delivery", "fieldtype": "Data", "width": 100},
-		{"fieldname": "billing_status", "label": "Billing", "fieldtype": "Data", "width": 100},
-		{"fieldname": "per_delivered", "label": "Delivered", "fieldtype": "Percent", "width": 100},
-		{"fieldname": "per_billed", "label": "Billed Percent", "fieldtype": "Percent", "width": 100},
-		{"fieldname": "owner", "label": "Owner", "fieldtype": "Link", "options": "User", "width": 100},
-		{"fieldname": "allow_delivery", "label": "Allow Delivery", "fieldtype": "Check", "width": 100},
-		{"fieldname": "delivery_approval_comments", "label": "Delivery Comments", "fieldtype": "Data", "width": 150},
-		{"fieldname": "company", "label": "Company", "fieldtype": "Link", "options": "Company", "width": 100}
+		{"fieldname": "sales_order", "label": _("ID"), "fieldtype": "Link", "options": "Sales Order", "width": 100},
+		{"fieldname": "salesman", "label": _("Salesman"), "fieldtype": "Data", "width": 100},
+		{"fieldname": "customer", "label": _("Customer"), "fieldtype": "Link", "options": "Customer", "width": 100},
+		{"fieldname": "customer_name", "label": _("Customer Name"), "fieldtype": "Data", "width": 100},
+		{"fieldname": "transaction_date", "label": _("Date"), "fieldtype": "Date", "width": 100},
+		{"fieldname": "total", "label": _("Total"), "fieldtype": "Currency", "width": 100},
+		{"fieldname": "payment", "label": _("Payment"), "fieldtype": "Currency", "width": 100},
+		{"fieldname": "returns", "label": _("Returns"), "fieldtype": "Currency", "width": 100},
+	#	{"fieldname": "return_payment", _("label"): "Returns Payment", "fieldtype": "Currency", "width": 100},
+		{"fieldname": "pending", "label": _("Pending"), "fieldtype": "Currency", "width": 100},
+		{"fieldname": "status", "label": _("Status"), "fieldtype": "Data", "width": 100},
+		{"fieldname": "delivery_status", "label": _("Delivery"), "fieldtype": "Data", "width": 100},
+		{"fieldname": "billing_status", "label": _("Billing"), "fieldtype": "Data", "width": 100},
+		{"fieldname": "per_delivered", "label": _("Delivered"), "fieldtype": "Int", "width": 100},
+		{"fieldname": "per_billed", "label": _("Billed Percent"), "fieldtype": "Int", "width": 100},
+		{"fieldname": "owner", "label": _("Owner"), "fieldtype": "Link", "options": "User", "width": 100},
+		{"fieldname": "allow_delivery", "label": _("Allow Delivery"), "fieldtype": "Check", "width": 100},
+		{"fieldname": "delivery_approval_comments", "label": _("Delivery Comments"), "fieldtype": "Data", "width": 150},
+		{"fieldname": "company", "label": _("Company"), "fieldtype": "Link", "options": "Company", "width": 100}
 	]
 
 	sql_query = """
