@@ -161,7 +161,12 @@ cur_frm.script_manager.make(erpnext.selling.QuotationController);
 
 cur_frm.fields_dict.lead.get_query = function(doc,cdt,cdn) {
 	return{	query: "erpnext.controllers.queries.lead_query" }
-}
+};
+// Start Tiles Business Hide territory group
+cur_frm.fields_dict.territory.get_query = function(doc,cdt,cdn) {
+	return{	filters: {'is_group': 0} }
+};
+// End Tiles Business Hide territory group
 
 cur_frm.cscript['Make Sales Order'] = function() {
 	frappe.model.open_mapped_doc({

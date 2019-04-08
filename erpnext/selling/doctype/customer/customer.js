@@ -7,6 +7,9 @@ frappe.ui.form.on("Customer", {
 		frm.add_fetch('default_sales_partner','commission_rate','default_commission_rate');
 
 		frm.set_query('customer_group', {'is_group': 0});
+		// Start Tiles Business Hide territory group
+		frm.set_query('territory', {'is_group': 0});
+		// End Tiles Business Hide territory group
 		frm.set_query('default_price_list', { 'selling': 1});
 		frm.set_query('account', 'accounts', function(doc, cdt, cdn) {
 			var d  = locals[cdt][cdn];

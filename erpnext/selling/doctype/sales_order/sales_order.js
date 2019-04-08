@@ -38,6 +38,12 @@ frappe.ui.form.on("Sales Order", {
 			}
 		}
 
+		frm.get_field("territory").get_query = function(doc, cdt, cdn){
+			return{
+				filters: {'is_group': 0}
+			}
+		}
+
 		erpnext.queries.setup_warehouse_query(frm);
 
 		for (let item of cur_frm.doc.items) {

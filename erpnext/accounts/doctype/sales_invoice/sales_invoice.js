@@ -30,6 +30,13 @@ erpnext.accounts.SalesInvoiceController = erpnext.selling.SellingController.exte
 		//erpnext.queries.setup_queries(this.frm, "Warehouse", function() {
 		//	return erpnext.queries.warehouse(me.frm.doc);
 		//});
+		// Start Tiles Business Hide territory group
+		this.frm.get_field("territory").get_query = function(doc, cdt, cdn){
+			return{
+				filters: {'is_group': 0}
+			}
+		};
+		// End Tiles Business Hide territory group
 
         erpnext.queries.setup_warehouse_query(this.frm);
 
