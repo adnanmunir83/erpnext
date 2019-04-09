@@ -137,7 +137,7 @@ def validate_quantity(doc, args, ref, valid_items, already_returned_items):
 			elif returned_qty >= reference_qty and args.get(column):
 				frappe.throw(_("Item {0} has already been returned")
 					.format(args.item_code), StockOverReturnError)
-			elif abs(current_stock_qty) > max_returnable_qty:
+			elif abs(current_stock_qty) > max_returnable_qty + .0001:
 				frappe.throw(_("Row # {0}: Cannot return more than {1} for Item {2}")
 					.format(args.idx, max_returnable_qty, args.item_code), StockOverReturnError)
 
