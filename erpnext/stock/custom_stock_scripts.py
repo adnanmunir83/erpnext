@@ -105,7 +105,13 @@ def get_item_details(args):
 
 
 def custom_item_query(doctype, txt, searchfield, start, page_len, filters, as_dict=False):
-	conditions = []
+	namesearch = '('
+	for strparam in txt.split("%"):
+		namesearch += " tabItem.item_name like '%" + strparam +"%' and"
+	namesearch = namesearch.rsplit(' ', 1)[0]
+	namesearch += ' )'
+
+	conditions = []	
 
 	return frappe.db.sql("""
 		select tabItem.name, tabItem.item_name as item_name, tabItem.item_group
@@ -117,7 +123,7 @@ def custom_item_query(doctype, txt, searchfield, start, page_len, filters, as_di
 			and (tabItem.end_of_life > %(today)s or ifnull(tabItem.end_of_life, '0000-00-00')='0000-00-00')
 			and (tabItem.`{key}` LIKE %(txt)s
 				or tabItem.item_group LIKE %(txt)s
-				or tabItem.item_name LIKE %(txt)s
+				or  {namesearch}
 				or tabItem.barcode LIKE %(txt)s)
 			{fcond} {mcond}
 		group by tabItem.name
@@ -130,13 +136,13 @@ def custom_item_query(doctype, txt, searchfield, start, page_len, filters, as_di
 		limit %(start)s, %(page_len)s """.format(
 			key=searchfield,
 			fcond=get_filters_cond(doctype, filters, conditions).replace('%', '%%'),
-			mcond=get_match_cond(doctype).replace('%', '%%')),
+			mcond=get_match_cond(doctype).replace('%', '%%'),namesearch=namesearch.replace('%', '%%')),
 			{
 				"today": nowdate(),
 				"txt": "%%%s%%" % txt,
 				"_txt": txt.replace("%", ""),
 				"start": start,
-				"page_len": page_len
+				"page_len": page_len				
 			}, as_dict=as_dict)
 
 
