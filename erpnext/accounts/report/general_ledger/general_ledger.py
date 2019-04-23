@@ -290,19 +290,19 @@ def get_columns(filters):
 		{
 			"label": _("Debit"),
 			"fieldname": "debit",
-			"fieldtype": "Float",
+			"fieldtype": "Currency",
 			"width": 100
 		},
 		{
 			"label": _("Credit"),
 			"fieldname": "credit",
-			"fieldtype": "Float",
+			"fieldtype": "Currency",
 			"width": 100
 		},
 		{
 			"label": _("Balance (Dr - Cr)"),
 			"fieldname": "balance",
-			"fieldtype": "Float",
+			"fieldtype": "Currency",
 			"width": 130
 		}
 	]
@@ -312,13 +312,13 @@ def get_columns(filters):
 			{
 				"label": _("Debit") + " (" + filters.account_currency + ")",
 				"fieldname": "debit_in_account_currency",
-				"fieldtype": "Float",
+				"fieldtype": "Currency",
 				"width": 100
 			},
 			{
 				"label": _("Credit") + " (" + filters.account_currency + ")",
 				"fieldname": "credit_in_account_currency",
-				"fieldtype": "Float",
+				"fieldtype": "Currency",
 				"width": 100
 			},
 			{

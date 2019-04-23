@@ -17,7 +17,7 @@ def execute(filters=None):
 		sales_order1 = " and sales_order like '%{}%' ".format(filters.get("sales_order"))
 		sales_order2 = " and cust_shipment_no like '%{}%' ".format(filters.get("sales_order"))
 	else: 
-		conditions += " and posting_date >= '{}' ".format(add_days(getdate(),-4))
+		conditions += " and posting_date >= '{}' ".format(add_days(getdate(),-20))
 
 	
 	
