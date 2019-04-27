@@ -39,6 +39,8 @@ class StockEntry(StockController):
 			self.pro_doc = frappe.get_doc('Production Order', self.production_order)
 		
 		self.validate_date()
+		# Tiles Validate Users Permissions
+		self.validate_permissions()
 
 		self.validate_posting_time()
 		self.validate_purpose()
@@ -67,6 +69,7 @@ class StockEntry(StockController):
 
 	def on_submit(self):
 
+		self.validate_user_warehouse()
 		self.update_stock_ledger()
 
 		from erpnext.stock.doctype.serial_no.serial_no import update_serial_nos_after_submit
@@ -891,6 +894,34 @@ class StockEntry(StockController):
 			reserve_warehouse = item_wh.get(d.item_code)
 			stock_bin = get_bin(d.item_code, reserve_warehouse)
 			stock_bin.update_reserved_qty_for_sub_contracting()
+	
+	def validate_permissions(self):
+		# Check for Source and Target Warehouse are either normal or brerakage
+		for d in self.get("items"):
+			if ("Breakage" in d.t_warehouse and "Breakage" not in d.s_warehouse ):
+				frappe.throw(_("Normal Warehouse to Breakage Transfer is not possible for Item {0} .").format(d.item_code))
+
+			if ("Breakage" in d.s_warehouse and "Breakage" not in d.t_warehouse ):
+				frappe.throw(_("Breakage Warehouse to Normal Transfer is not possible for Item {0} .").format(d.item_code))
+		# Get User's Warehouse
+		
+		#check if user is owner of this warehouse
+
+	def validate_user_warehouse(self):
+		user_warehouse = frappe.db.get_value("User", {"name": frappe.session.user}, "user_warehouse")	
+		strTransit = "Transit"
+		if user_warehouse :	
+			for d in self.get("items"):				
+				if ( strTransit in d.t_warehouse ):
+					if not (user_warehouse in d.s_warehouse or user_warehouse.replace("Normal","Breakage") in d.s_warehouse ):
+						frappe.throw(_("you are note allowed to tranfer stock from warehouse {0} .").format(d.s_warehouse))
+			
+				if ( strTransit in d.s_warehouse):
+						if not (user_waerhouse in d.t_warehouse or user_warehouse.replace("Normal","Breakage") in d.t_warehouse ):
+							frappe.throw(_("you cannot Receive stock from warehouse {0} .").format(d.t_warehouse))
+		else :
+			frappe.throw(_("your user has not allocated any warehouse ."))
+		
 	
 @frappe.whitelist()
 def move_sample_to_retention_warehouse(company, items):
