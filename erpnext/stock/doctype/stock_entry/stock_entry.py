@@ -917,7 +917,7 @@ class StockEntry(StockController):
 						frappe.throw(_("you are note allowed to tranfer stock from warehouse {0} .").format(d.s_warehouse))
 			
 				if ( strTransit in d.s_warehouse):
-						if not (user_waerhouse in d.t_warehouse or user_warehouse.replace("Normal","Breakage") in d.t_warehouse ):
+						if not (user_warehouse in d.t_warehouse or user_warehouse.replace("Normal","Breakage") in d.t_warehouse ):
 							frappe.throw(_("you cannot Receive stock from warehouse {0} .").format(d.t_warehouse))
 		else :
 			frappe.throw(_("your user has not allocated any warehouse ."))
