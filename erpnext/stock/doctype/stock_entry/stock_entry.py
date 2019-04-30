@@ -895,12 +895,12 @@ class StockEntry(StockController):
 			stock_bin = get_bin(d.item_code, reserve_warehouse)
 			stock_bin.update_reserved_qty_for_sub_contracting()
 	
-	def validate_permissions(self):
-		if not self.bypass_transit_warehouse :
+	def validate_permissions(self):		
 			# Check for Source and Target Warehouse are either normal or brerakage
 			for d in self.get("items"):
-				if ("Breakage" in d.t_warehouse and "Breakage" not in d.s_warehouse ):
-					frappe.throw(_("Normal Warehouse to Breakage Transfer is not possible for Item {0} .").format(d.item_code))
+				if not self.approve_breakage_transfer :
+					if ("Breakage" in d.t_warehouse and "Breakage" not in d.s_warehouse ):
+						frappe.throw(_("Normal Warehouse to Breakage Transfer is not possible for Item {0} .").format(d.item_code))
 
 				if ("Breakage" in d.s_warehouse and "Breakage" not in d.t_warehouse ):
 					frappe.throw(_("Breakage Warehouse to Normal Transfer is not possible for Item {0} .").format(d.item_code))
