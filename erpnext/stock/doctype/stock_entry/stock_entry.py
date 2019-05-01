@@ -38,9 +38,7 @@ class StockEntry(StockController):
 		if self.production_order:
 			self.pro_doc = frappe.get_doc('Production Order', self.production_order)
 		
-		self.validate_date()
-		# Tiles Validate Users Permissions
-		self.validate_permissions()
+		self.validate_date()		
 
 		self.validate_posting_time()
 		self.validate_purpose()
@@ -69,6 +67,8 @@ class StockEntry(StockController):
 
 	def on_submit(self):
 
+		# Tiles Validate Users Permissions
+		self.validate_permissions()
 		self.validate_user_warehouse()
 		self.update_stock_ledger()
 

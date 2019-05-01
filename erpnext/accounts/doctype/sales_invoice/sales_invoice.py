@@ -1141,37 +1141,38 @@ def update_item_qty_based_on_sales_order(items):
 	items_codes_visited = set()
 	for item in items:
 		item = frappe._dict(item)
-		if item.sales_order:
-			row = {}
-			if not item.so_detail:
-				set_item_so_detail(item)
-				row['so_detail'] = item.so_detail
+		if item.qty > 0:
+			if item.sales_order:
+				row = {}
+				if not item.so_detail:
+					set_item_so_detail(item)
+					row['so_detail'] = item.so_detail
 
-			so_item = frappe.get_value("Sales Order Item", item.so_detail, ["qty", "rate"], as_dict=1)
-			if not so_item:
-				frappe.msgprint("Row {0}: Ignoring Item {1}. Could not find Sales Order Item in {2}".format(
-					item.idx, item.item_code, item.sales_order))
+				so_item = frappe.get_value("Sales Order Item", item.so_detail, ["qty", "rate"], as_dict=1)
+				if not so_item:
+					frappe.msgprint("Row {0}: Ignoring Item {1}. Could not find Sales Order Item in {2}".format(
+						item.idx, item.item_code, item.sales_order))
 
-			row['rate'] = so_item.rate
+				row['rate'] = so_item.rate
 
-			if item.item_code in items_codes_visited:
-				row['qty'] = 0
-			else:
-				invoiced_qty = frappe.db.sql("""
-					select sum(item.qty)
-					from `tabSales Invoice Item` item
-					inner join `tabSales Invoice` si on si.name = item.parent
-					where si.docstatus < 2 and si.is_return != 1 and item.so_detail = %s and item.parent != %s
-				""", [item.so_detail, item.parent])
-				invoiced_qty = invoiced_qty[0][0] if invoiced_qty else 0
-				invoiced_qty = flt(invoiced_qty)
+				if item.item_code in items_codes_visited:
+					row['qty'] = 0
+				else:
+					invoiced_qty = frappe.db.sql("""
+						select sum(item.qty)
+						from `tabSales Invoice Item` item
+						inner join `tabSales Invoice` si on si.name = item.parent
+						where si.docstatus < 2 and si.is_return != 1 and item.so_detail = %s and item.parent != %s
+					""", [item.so_detail, item.parent])
+					invoiced_qty = invoiced_qty[0][0] if invoiced_qty else 0
+					invoiced_qty = flt(invoiced_qty)
 
-				remaining_qty = max(0, so_item.qty - invoiced_qty)
-				if remaining_qty< flt(item.qty):
-					row['qty'] = remaining_qty
+					remaining_qty = max(0, so_item.qty - invoiced_qty)
+					if remaining_qty< flt(item.qty):
+						row['qty'] = remaining_qty
 
-			out[item.name] = row
-			items_codes_visited.add(item.item_code)
+				out[item.name] = row
+				items_codes_visited.add(item.item_code)
 
 	return out
 
