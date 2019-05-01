@@ -22,7 +22,7 @@ def get_data(filters):
 
 	return frappe.db.sql("""
 			select 
-			name , posting_date , customer, payment_terms_template , grand_total , paid_amount , 
+			 posting_date, name , customer, payment_terms_template , grand_total , paid_amount , 
 			outstanding_amount , company
 
 			from `tabSales Invoice` 
@@ -40,8 +40,8 @@ def get_columns():
 	"""return columns"""
 
 	columns = [
-		_("Invoice No")+":Link/Sales Invoice:100",
 		_("Date")+":Date:100",
+		_("Invoice No")+":Link/Sales Invoice:100",
 		_("Customer")+":Link/Customer:200",
 		_("Payment Terms")+":Data:100",
 		_("Total")+":Float:100",	

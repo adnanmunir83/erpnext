@@ -13,8 +13,8 @@
 <table class="table table-bordered">
 	<thead>
 		<tr>
-			<th>{%= __("Invoice No") %}</th>		
 			<th>{%= __("Date") %}</th>
+			<th>{%= __("Invoice No") %}</th>	
 			<th>{%= __("Total") %}</th>
 			<th>{%= __("Paid") %}</th>
 			<th>{%= __("Outstanding") %}</th>						
@@ -23,8 +23,8 @@
 	<tbody>
 		{%  for(var i=0, l=data.length; i<l; i++) { %}
 			<tr>			
-				<td >{%= data[i][__("Invoice No")] %}</td>			      
-				<td >{%= data[i][__("Date")] %}</td>								      
+				<td >{%= data[i][__("Date")] %}</td>
+				<td >{%= data[i][__("Invoice No")] %}</td>			      												      
 				<td >{%= format_currency(data[i][__("Total")]) %}</td>
 				<td >{%= format_currency(data[i][__("Paid")]) %}</td>	      
 				<td >{%= format_currency(data[i][__("Outstanding")]) %}</td>				      
