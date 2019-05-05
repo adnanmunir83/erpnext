@@ -117,7 +117,7 @@ class PurchaseReceipt(BuyingController):
 		# Check for Approving Authority
 		frappe.get_doc('Authorization Control').validate_approving_authority(self.doctype,
 			self.company, self.base_grand_total)
-
+		self.update_item_supplier()
 		self.update_prevdoc_status()
 		if self.per_billed < 100:
 			self.update_billing_status()
@@ -325,6 +325,13 @@ class PurchaseReceipt(BuyingController):
 			pr_doc.update_billing_percentage(update_modified=update_modified)
 
 		self.load_from_db()
+
+	# Tiles Business Update Item upon Receiving New Item
+	def update_item_supplier(self):
+		if self.supplier != "S-00095":
+			for d in self.get("items"):
+				frappe.db.sql("""update `tabItem` set default_supplier = %s , cust_supplier_name= %s where name = %s""",
+				(self.supplier,self.supplier_name, d.item_code))
 
 def update_billed_amount_based_on_po(po_detail, update_modified=True):
 	# Billed against Sales Order directly
