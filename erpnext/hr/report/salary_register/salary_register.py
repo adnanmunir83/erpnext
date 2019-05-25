@@ -37,7 +37,7 @@ def execute(filters=None):
 
 		row.append(ss.total_loan_repayment)
 
-		row += [ss.total_deduction, ss.net_pay]
+		row += [ss.total_deduction+ss.total_loan_repayment, ss.net_pay]
 
 		data.append(row)
 
