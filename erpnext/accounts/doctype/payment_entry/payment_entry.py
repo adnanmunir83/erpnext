@@ -5,7 +5,7 @@
 from __future__ import unicode_literals
 import frappe, erpnext, json
 from frappe import _, scrub, ValidationError
-from frappe.utils import flt, comma_or, nowdate
+from frappe.utils import flt, cint, comma_or, nowdate
 from erpnext.accounts.utils import get_outstanding_invoices, get_account_currency, get_balance_on
 from erpnext.accounts.party import get_party_account
 from erpnext.accounts.doctype.journal_entry.journal_entry import get_default_bank_cash_account
@@ -566,7 +566,11 @@ def get_orders_to_be_billed(company,posting_date, party_type, party, party_accou
 
 	orders = []
 	if voucher_type:
-		ref_field = "base_grand_total" if party_account_currency == company_currency else "grand_total"
+		disable_rounded_total = cint(frappe.db.get_value("Global Defaults", None, "disable_rounded_total"))
+		if disable_rounded_total:
+			ref_field = "base_grand_total" if party_account_currency == company_currency else "grand_total"
+		else:			
+			ref_field = "base_rounded_total" if party_account_currency == company_currency else "rounded_total"
 
 		orders = frappe.db.sql("""
 			select
