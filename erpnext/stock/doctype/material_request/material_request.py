@@ -98,6 +98,7 @@ class MaterialRequest(BuyingController):
 
 	def before_submit(self):
 		self.set_status(update=True)
+		self.set_mr_no_items()
 
 	def before_cancel(self):
 		# if MRQ is already closed, no point saving the document
@@ -211,6 +212,10 @@ class MaterialRequest(BuyingController):
 						frappe.throw(_("The total Requested quantity {0}   \
 		                	cannot be greater than Sales Order quantity {1} , for Item {2}")
                         	.format(d.qty, sales_order_qty, d.item_code))
+
+	def set_mr_no_items(self):
+		for d in self.get("items"):
+			d.material_request_no = self.name
 
 
 def update_completed_and_requested_qty(stock_entry, method):
