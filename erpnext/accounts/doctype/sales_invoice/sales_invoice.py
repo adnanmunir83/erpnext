@@ -972,12 +972,18 @@ class SalesInvoice(SellingController):
 						.format(d.idx, d.description, tax_balance[d.account_head]))
 	
 	def validate_user_warehouse(self):
-		if not self.approval_receive_in_breakage :
-			user_warehouse = frappe.db.get_value("User",{"name": frappe.session['user']}, "user_warehouse")
+		user_warehouse = frappe.db.get_value("User",{"name": frappe.session['user']}, "user_warehouse")
+		if not self.approval_receive_in_breakage :		
 			for item in self.items:
-				if not (item.warehouse in user_warehouse or item.warehouse in (user_warehouse.replace("Normal","Breakage"))):
+				if not (item.warehouse in user_warehouse):
 					frappe.throw(_("You are not allowed to submit Invoice in Warehoues:<b> {0} </b>  for Item Code  <b>{1}</b>")
 					.format(item.warehouse,item.item_code))
+		else:
+			for item in self.items:
+				if not (item.warehouse in user_warehouse or item.warehouse in (user_warehouse.replace("Normal","Breakage")) or item.warehouse in (user_warehouse.replace("Depot","Breakage"))):
+					frappe.throw(_("You are not allowed to submit Invoice in Warehoues:<b> {0} </b>  for Item Code  <b>{1}</b>")
+					.format(item.warehouse,item.item_code))
+
 		
 
 
