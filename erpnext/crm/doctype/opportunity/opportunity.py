@@ -9,12 +9,13 @@ from frappe.model.mapper import get_mapped_doc
 from erpnext.setup.utils import get_exchange_rate
 from erpnext.utilities.transaction_base import TransactionBase
 from erpnext.accounts.party import get_party_account_currency
+from frappe.core.doctype.sms_settings.sms_settings import send_sms
 
 subject_field = "title"
 sender_field = "contact_email"
 
 class Opportunity(TransactionBase):
-	def after_insert(self):
+	def after_insert(self):	
 		if self.lead:
 			frappe.get_doc("Lead", self.lead).set_status(update=True)
 
@@ -41,6 +42,8 @@ class Opportunity(TransactionBase):
 
 		if not self.with_items:
 			self.items = []
+		
+		self.send_followup_sms()
 
 	def make_new_lead_if_required(self):
 		"""Set lead against new opportunity"""
@@ -197,6 +200,36 @@ class Opportunity(TransactionBase):
 				msgprint("Customer is mandatory if 'Opportunity From' is selected as Customer", raise_exception=1)
 			else:
 				self.lead = None
+	
+	def send_followup_sms(self):
+		def validate_number(number_list):
+			validated_number_list=[]
+			for n in number_list:
+				if '03' == n[:2]:
+					n = '92' + n[1:]
+				if '923' != n[:3] or len(n) != 12:
+					frappe.throw(_("Phone Number is not Valid to Send SMS in Follow Up Table.  Please Check number again."))
+				validated_number_list.append(n)
+			return validated_number_list
+
+		for d in self.followup:	
+			if d.send_message and not d.message_sent and len(d.sms_message)>10:
+				number_list = []
+				if d.owner_sms_cell :
+					number_list.append(d.owner_sms_cell)
+				if d.architect_sms_cell :
+					number_list.append(d.architect_sms_cell)
+				if d.contractor_cell_no :
+					number_list.append(d.contractor_cell_no)
+				if number_list:
+					if len(d.sms_message) > 305:
+						frappe.throw(_("Message Length should be less than 2 Messages (305 characters) ."))
+					number_list = validate_number(number_list)
+					send_sms(number_list, cstr(d.sms_message))
+					d.message_sent = 1
+	
+	
+
 
 @frappe.whitelist()
 def get_item_details(item_code):
