@@ -973,7 +973,7 @@ class SalesInvoice(SellingController):
 	
 	def validate_user_warehouse(self):
 		user_warehouse = frappe.db.get_value("User",{"name": frappe.session['user']}, "user_warehouse")
-		if not self.approval_receive_in_breakage :		
+		if self.is_return and not self.approval_receive_in_breakage :		
 			for item in self.items:
 				if not (item.warehouse in user_warehouse):
 					frappe.throw(_("You are not allowed to submit Invoice in Warehoues:<b> {0} </b>  for Item Code  <b>{1}</b>")
