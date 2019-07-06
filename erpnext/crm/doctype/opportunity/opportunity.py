@@ -225,7 +225,7 @@ class Opportunity(TransactionBase):
 					if len(d.sms_message) > 305:
 						frappe.throw(_("Message Length should be less than 2 Messages (305 characters) ."))
 					number_list = validate_number(number_list)
-					send_sms(number_list, cstr(d.sms_message))
+					send_sms(number_list, cstr(d.sms_message),self.company)
 					d.message_sent = 1
 	
 	
