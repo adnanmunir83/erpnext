@@ -987,7 +987,7 @@ class SalesInvoice(SellingController):
 	
 	def validate_additional_discount(self):			
 		#so_additional_discount = frappe.db.get_value("Sales Order",{"name": self.cust_sales_order_number}, "discount_amount")
-		if calculate_so_discount_ :
+		if self.calculate_so_discount_ :
 			so_values = frappe.get_value("Sales Order", self.cust_sales_order_number, ["discount_amount", "rounded_total","grand_total"], as_dict=1)
 			if so_values.discount_amount > 1 :
 				discount_per = flt(flt(so_values.discount_amount)*100/ flt(so_values.rounded_total))
