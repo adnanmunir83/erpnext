@@ -63,7 +63,7 @@ class SalesInvoice(SellingController):
 
 		self.set_missing_so_detail()
 		self.validate_date()
-		self.validate_additional_discount()
+		# self.validate_additional_discount()
 
 		self.validate_proj_cust()
 		self.validate_with_previous_doc()
