@@ -168,7 +168,7 @@ class Customer(TransactionBase):
 			return
 
 		for company in frappe.get_all("Company"):
-			outstanding_amt = get_customer_outstanding(self.name, company.name)
+			outstanding_amt = get_customer_outstanding(self.name, company.name,self.bypass_credit_limit_check_at_sales_order)
 			if flt(self.credit_limit) < outstanding_amt:
 				frappe.throw(_("""New credit limit is less than current outstanding amount for the customer. Credit limit has to be atleast {0}""").format(outstanding_amt))
 
