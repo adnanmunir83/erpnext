@@ -62,8 +62,7 @@ class SalesInvoice(SellingController):
 			self.so_dn_required()
 
 		self.set_missing_so_detail()
-		self.validate_date()
-		# self.validate_additional_discount()
+		self.validate_date()		
 
 		self.validate_proj_cust()
 		self.validate_with_previous_doc()
@@ -984,16 +983,6 @@ class SalesInvoice(SellingController):
 				if not (item.warehouse in user_warehouse or item.warehouse in (user_warehouse.replace("Normal","Breakage")) or item.warehouse in (user_warehouse.replace("Depot","Breakage"))):
 					frappe.throw(_("You are not allowed to submit Invoice in Warehoues:<b> {0} </b>  for Item Code  <b>{1}</b>")
 					.format(item.warehouse,item.item_code))
-	
-	def validate_additional_discount(self):			
-		#so_additional_discount = frappe.db.get_value("Sales Order",{"name": self.cust_sales_order_number}, "discount_amount")
-		if self.calculate_so_discount_ :
-			so_values = frappe.get_value("Sales Order", self.cust_sales_order_number, ["discount_amount", "total","grand_total"], as_dict=1)
-			if so_values.discount_amount > 1 :
-				discount_per = flt(flt(so_values.discount_amount)*100/ flt(so_values.total))
-				self.additional_discount_percentage = discount_per
-				self.discount_amount = (flt(self.total) *discount_per)/100
-
 
 def set_item_so_detail(item):
 	so_detail = frappe.db.sql_list("""

@@ -105,7 +105,7 @@ def get_actual_details(name, filters):
 		cc_lft, cc_rgt = frappe.db.get_value("Cost Center", name, ["lft", "rgt"])
 		cond = "lft>='{lft}' and rgt<='{rgt}'".format(lft = cc_lft, rgt=cc_rgt)
 	
-	ac_details = frappe.db.sql("""select gl.account, gl.debit, gl.credit,
+	ac_details = frappe.db.sql("""select distinct gl.name, gl.account, gl.debit, gl.credit,
 		MONTHNAME(gl.posting_date) as month_name, b.{budget_against} as budget_against
 		from `tabGL Entry` gl, `tabBudget Account` ba, `tabBudget` b
 		where
