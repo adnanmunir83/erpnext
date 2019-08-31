@@ -59,13 +59,23 @@ frappe.ui.form.on("Salary Slip", {
 	},
 
 	refresh: function(frm) {
+		if (cur_frm.doc.docstatus == 1 && !cur_frm.doc.__islocal) {
+			var label = __("Make Payment");
+			cur_frm.remove_custom_button(label);			
+			cur_frm.add_custom_button(label, function() {
+				frappe.model.open_mapped_doc({
+								method : "erpnext.hr.doctype.salary_slip.salary_slip.make_payment",
+								frm:cur_frm
+						})
+				 });
+		}
 		frm.trigger("toggle_fields")
 		frm.trigger("toggle_reqd_fields")
 		var salary_detail_fields = ['formula', 'abbr', 'statistical_component']
 		cur_frm.fields_dict['earnings'].grid.set_column_disp(salary_detail_fields,false);
 		cur_frm.fields_dict['deductions'].grid.set_column_disp(salary_detail_fields,false);
-	},	
-
+	},
+	
 	salary_slip_based_on_timesheet: function(frm, dt, dn) {
 		frm.trigger("toggle_fields");
 		get_emp_and_leave_details(frm.doc, dt, dn);

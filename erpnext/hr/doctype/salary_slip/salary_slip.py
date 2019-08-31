@@ -474,3 +474,24 @@ def unlink_ref_doc_from_salary_slip(ref_no):
 		for ss in linked_ss:
 			ss_doc = frappe.get_doc("Salary Slip", ss)
 			frappe.db.set_value("Salary Slip", ss_doc.name, "journal_entry", "")
+
+@frappe.whitelist()
+def make_payment(salaryslipname):
+	salaryslip = frappe.get_doc("Salary Slip",salaryslipname)
+	deduction_account = frappe.get_value("Account",{"company":salaryslip.company,"account_number":22610})	
+	doc = frappe.new_doc("Payment Entry")
+	doc.update(
+		{"company":salaryslip.company,
+		"payment_type":"Pay",	
+		"salary_slip_id":salaryslipname,
+		"party_type": "Employee",
+		"party":salaryslip.employee,
+		"paid_amount":salaryslip.rounded_total,
+		"deductions":[{"account":deduction_account,"amount":salaryslip.rounded_total}]	
+		})
+
+	doc.setup_party_account_field()
+	doc.set_missing_values()
+	doc.set_exchange_rate()
+
+	return doc.as_dict()
