@@ -486,6 +486,7 @@ def make_payment(salaryslipname):
 		"salary_slip_id":salaryslipname,
 		"party_type": "Employee",
 		"party":salaryslip.employee,
+		"paid_to":deduction_account,
 		"paid_amount":salaryslip.rounded_total,
 		"deductions":[{"account":deduction_account,"amount":salaryslip.rounded_total}]	
 		})

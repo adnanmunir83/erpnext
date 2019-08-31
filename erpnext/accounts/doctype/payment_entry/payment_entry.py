@@ -60,6 +60,7 @@ class PaymentEntry(AccountsController):
 		self.validate_allocated_amount()
 
 	def on_submit(self):
+		self.update_salaryslip_status()
 		self.setup_party_account_field()
 		if self.difference_amount:
 			frappe.throw(_("Difference Amount must be zero"))
@@ -69,6 +70,7 @@ class PaymentEntry(AccountsController):
 		self.update_expense_claim()
 
 	def on_cancel(self):
+		self.reverse_salaryslip_status()
 		self.setup_party_account_field()
 		self.make_gl_entries(cancel=1)
 		self.update_outstanding_amounts()
@@ -78,6 +80,16 @@ class PaymentEntry(AccountsController):
 
 	def update_outstanding_amounts(self):
 		self.set_missing_ref_details(force=True)
+
+	def update_salaryslip_status(self):
+		if self.salary_slip_id:
+			frappe.db.sql("""update `tabSalary Slip` set payment_status = 'Salary Paid' 
+					where name=%s""",self.salary_slip_id)
+	
+	def reverse_salaryslip_status(self):
+		if self.salary_slip_id:
+			frappe.db.sql("""update `tabSalary Slip` set payment_status = 'Not Paid' 
+					where name=%s""",self.salary_slip_id)
 
 	def validate_duplicate_entry(self):
 		reference_names = []
