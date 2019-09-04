@@ -60,6 +60,7 @@ frappe.ui.form.on('Employee Loan', {
 				"company": frm.doc.company,
 				"employee_loan_account": frm.doc.employee_loan_account,
 				"employee": frm.doc.employee,
+				"employee_name": frm.doc.employee_name,
 				"loan_amount": frm.doc.loan_amount,
 				"payment_account": frm.doc.payment_account
 			},
