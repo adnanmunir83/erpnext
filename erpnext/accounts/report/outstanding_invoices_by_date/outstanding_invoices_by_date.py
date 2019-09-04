@@ -22,14 +22,31 @@ def get_data(filters):
 
 	return frappe.db.sql("""
 			select 
-			 posting_date, name , customer, payment_terms_template , grand_total , paid_amount , 
-			outstanding_amount , company
+			 posting_date, name , customer, payment_terms_template , grand_total ,
+			 (select ifnull(sum(payment_gl_entry.credit_in_account_currency - payment_gl_entry.debit_in_account_currency), 0)
+			from `tabGL Entry` payment_gl_entry
+			where 
+			payment_gl_entry.against_voucher = ts.name	
+			and payment_gl_entry.party =ts.customer	
+			and payment_gl_entry.credit_in_account_currency - payment_gl_entry.debit_in_account_currency > 0) paid_amount , 
+			(grand_total - (select ifnull(sum(payment_gl_entry.credit_in_account_currency - payment_gl_entry.debit_in_account_currency), 0)
+			from `tabGL Entry` payment_gl_entry
+			where 
+			payment_gl_entry.against_voucher = ts.name	
+			and payment_gl_entry.party =ts.customer	
+			and payment_gl_entry.credit_in_account_currency - payment_gl_entry.debit_in_account_currency > 0) ) outstanding_amount
+			, company
 
-			from `tabSales Invoice` 
+			from `tabSales Invoice` ts
 
 			where 
-			grand_total-1>paid_amount
-			and outstanding_amount >0
+			grand_total-1>(select ifnull(sum(payment_gl_entry.credit_in_account_currency - payment_gl_entry.debit_in_account_currency), 0)
+			from `tabGL Entry` payment_gl_entry
+			where 
+			payment_gl_entry.against_voucher = ts.name	
+			and payment_gl_entry.party =ts.customer	
+			and payment_gl_entry.credit_in_account_currency - payment_gl_entry.debit_in_account_currency > 0) 
+			
 			and docstatus=1
 			{0}
 			and posting_date >= %(fdate)s
