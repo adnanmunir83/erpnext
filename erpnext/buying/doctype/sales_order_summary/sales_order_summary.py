@@ -47,7 +47,7 @@ def get_related_documents(doctype, docname):
 
 	for so in document_details["Sales Order"]:
 		for d in so.get("items"):
-			d.remaining_qty = flt(d.qty) - flt(d.delivered_qty) - flt(d.returned_qty)
+			d.remaining_qty = flt(d.qty) - (flt(d.delivered_qty) + flt(d.returned_qty))
 
 	# include the Payment Entry against invoice
 	pe_names = map(lambda d: d.name, document_details["Payment Entry"] or [])
