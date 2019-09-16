@@ -42,6 +42,7 @@ class PaymentEntry(AccountsController):
 
 	def validate(self):
 		self.validate_date()
+		self.validate_salaryslip_amount()
 		self.setup_party_account_field()
 		self.set_missing_values()
 		self.validate_payment_type()
@@ -77,6 +78,12 @@ class PaymentEntry(AccountsController):
 		self.update_advance_paid()
 		self.update_expense_claim()
 		self.delink_advance_entry_references()
+
+	def validate_salaryslip_amount(self):
+		if self.salary_slip_id :
+			net_pay = frappe.db.get_value("Salary Slip", self.salary_slip_id, "net_pay")
+			if net_pay < self.paid_amount : 
+				 frappe.throw(_("Payment cannot Excceed from Salary Slip Amount {0}").format(net_pay))
 
 	def update_outstanding_amounts(self):
 		self.set_missing_ref_details(force=True)
