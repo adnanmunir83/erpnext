@@ -548,9 +548,9 @@ def get_outstanding_reference_documents(args):
 
 	# Get all SO / PO which are not fully billed or aginst which full advance not paid
 	orders_to_be_billed = []
-	if (args.get("party_type") != "Student"):
-		orders_to_be_billed =  get_orders_to_be_billed(args.get("posting_date"),args.get("party_type"),
-			args.get("party"), party_account_currency, company_currency)
+	# if (args.get("party_type") != "Student"):
+	# 	orders_to_be_billed =  get_orders_to_be_billed(args.get("posting_date"),args.get("party_type"),
+	# 		args.get("party"), party_account_currency, company_currency)
 
 	return negative_outstanding_invoices + outstanding_invoices #+ orders_to_be_billed
 
