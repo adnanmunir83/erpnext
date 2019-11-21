@@ -97,11 +97,12 @@ erpnext.selling.SellingController = erpnext.TransactionController.extend({
 	customer: function() {
 		var me = this;
 		erpnext.utils.get_party_details(this.frm, null, null,
-			function(){ me.apply_pricing_rule() });
+			function(){ me.apply_pricing_rule() });		
 	},
 
 	customer_address: function() {
 		erpnext.utils.get_address_display(this.frm, "customer_address");
+		this.frm.add_fetch("customer_address", "territory", "territory");
 	},
 
 	shipping_address_name: function() {
