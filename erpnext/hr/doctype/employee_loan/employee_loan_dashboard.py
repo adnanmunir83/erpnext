@@ -3,8 +3,9 @@ from frappe import _
 def get_data():
 	return {
 		'fieldname': 'employee',
-		'non_standard_fieldnames': {
-			'Journal Entry': 'reference_name',
+		'non_standard_fieldnames': {						
+			'Salary Slip' : 'employee_loan',
+			'Journal Entry': 'reference_name'
 			},
 		'transactions': [
 			{
