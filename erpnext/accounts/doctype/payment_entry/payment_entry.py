@@ -81,9 +81,9 @@ class PaymentEntry(AccountsController):
 
 	def validate_salaryslip_amount(self):
 		if self.salary_slip_id :
-			net_pay = frappe.db.get_value("Salary Slip", self.salary_slip_id, "net_pay")
-			if net_pay < self.paid_amount : 
-				 frappe.throw(_("Payment cannot Excceed from Salary Slip Amount {0}").format(net_pay))
+			rounded_total = frappe.db.get_value("Salary Slip", self.salary_slip_id, "rounded_total")
+			if rounded_total < self.paid_amount : 
+				 frappe.throw(_("Payment cannot Excceed from Salary Slip Amount {0}").format(rounded_total))
 
 	def update_outstanding_amounts(self):
 		self.set_missing_ref_details(force=True)
