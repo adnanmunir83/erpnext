@@ -43,6 +43,7 @@ class Employee(NestedSet):
 		self.validate_employee_leave_approver()
 		self.validate_reports_to()
 		self.validate_prefered_email()
+		self.validate_employee_salary()
 
 		if self.user_id:
 			self.validate_for_enabled_user_id()
@@ -165,6 +166,21 @@ class Employee(NestedSet):
 	def validate_prefered_email(self):
 		if self.prefered_contact_email and not self.get(scrub(self.prefered_contact_email)):
 			frappe.msgprint(_("Please enter " + self.prefered_contact_email))
+
+	def validate_employee_salary(self):
+		employee_update = ""
+		for r in self.internal_work_history:
+			employee_update = r
+		r.cust_total_salary = r.basic_salary + r.allowance
+		self.cust_basic_salary = r.basic_salary
+		self.cust_total_allowance = r.allowance
+		self.cust_gross_salary = r.basic_salary + r.allowance		
+		frappe.db.sql("""
+			update `tabSalary Structure Employee`
+			set working_hours = {0} ,base = {1}, variable = {2}
+			where employee='{3}' """
+			.format(r.hours,r.basic_salary,r.allowance,self.employee))		
+		frappe.msgprint(_("Salary Structure has been updated Successfully."))		
 
 def get_timeline_data(doctype, name):
 	'''Return timeline for attendance'''
