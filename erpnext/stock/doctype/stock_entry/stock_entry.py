@@ -910,6 +910,7 @@ class StockEntry(StockController):
 			#check if user is owner of this warehouse
 
 	def validate_user_warehouse(self):
+		strTransit = "Transit"
 		# if not self.bypass_transit_warehouse :
 		# 	user_warehouse = frappe.db.get_value("User", {"name": frappe.session.user}, "user_warehouse")	
 		# 	strTransit = "Transit"
@@ -926,7 +927,7 @@ class StockEntry(StockController):
 		# 							frappe.throw(_("you cannot Receive stock from warehouse {0} .").format(d.t_warehouse))
 		# 	else :
 		# 		frappe.throw(_("your user has not allocated any warehouse ."))
-			
+		
 	
 @frappe.whitelist()
 def move_sample_to_retention_warehouse(company, items):
