@@ -898,7 +898,7 @@ class StockEntry(StockController):
 	def validate_permissions(self):		
 			# Check for Source and Target Warehouse are either normal or brerakage
 			for d in self.get("items"):
-				if not self.approve_breakage_transfer :
+				if not self.approve_breakage_transfer and d.s_warehouse and d.t_warehouse :
 					if ("Breakage" in d.t_warehouse and "Breakage" not in d.s_warehouse ):
 						frappe.throw(_("Normal Warehouse to Breakage Transfer is not possible for Item {0} .").format(d.item_code))
 
