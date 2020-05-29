@@ -18,7 +18,7 @@ def execute(filters=None):
 
 	data = []
 	for ss in salary_slips:
-		row = [ss.name, ss.employee, ss.employee_name, ss.branch, ss.department, ss.designation,
+		row = [ss.name, ss.employee, ss.employee_name, ss.branch,ss.bank_name,ss.bank_ac_no, ss.department, ss.designation,
 			ss.company, ss.start_date, ss.end_date, ss.leave_withut_pay, ss.payment_days]
 
 		if not ss.branch == None:columns[3] = columns[3].replace('-1','120')
@@ -47,14 +47,14 @@ def get_columns(salary_slips):
 	"""
 	columns = [
 		_("Salary Slip ID") + ":Link/Salary Slip:150",_("Employee") + ":Link/Employee:120", _("Employee Name") + "::140", _("Branch") + ":Link/Branch:120",
-		_("Department") + ":Link/Department:120", _("Designation") + ":Link/Designation:120",
+		_("Bank") + ":Data:100", _("Bank Acc.") + ":Data:120",_("Department") + ":Link/Department:120", _("Designation") + ":Link/Designation:120",
 		_("Company") + ":Link/Company:120", _("Start Date") + "::80", _("End Date") + "::80", _("Leave Without Pay") + ":Float:130",
 		_("Payment Days") + ":Float:120"
 	]
 	"""
 	columns = [
 		_("Salary Slip ID") + ":Link/Salary Slip:150",_("Employee") + ":Link/Employee:120", _("Employee Name") + "::140", _("Branch") + ":Link/Branch:-1",
-		_("Department") + ":Link/Department:-1", _("Designation") + ":Link/Designation:-1",
+		_("Bank") + ":Data:100", _("Bank Acc.") + ":Data:120",_("Department") + ":Link/Department:-1", _("Designation") + ":Link/Designation:-1",
 		_("Company") + ":Link/Company:120", _("Start Date") + "::80", _("End Date") + "::80", _("Leave Without Pay") + ":Float:-1",
 		_("Payment Days") + ":Float:120"
 	]
@@ -76,7 +76,7 @@ def get_columns(salary_slips):
 def get_salary_slips(filters):
 	filters.update({"from_date": filters.get("date_range")[0], "to_date":filters.get("date_range")[1]})
 	conditions, filters = get_conditions(filters)
-	salary_slips = frappe.db.sql("""select * from `tabSalary Slip` where %s
+	salary_slips = frappe.db.sql("""select ss.*,te.bank_name,te.bank_ac_no from `tabSalary Slip` ss inner join `tabEmployee` te on ss.employee=te.name where %s
 		order by employee""" % conditions, filters, as_dict=1)
 
 	return salary_slips or []
@@ -86,12 +86,12 @@ def get_conditions(filters):
 	doc_status = {"Draft": 0, "Submitted": 1, "Cancelled": 2}
 
 	if filters.get("docstatus"):
-		conditions += "docstatus = {0}".format(doc_status[filters.get("docstatus")])
+		conditions += "ss.docstatus = {0}".format(doc_status[filters.get("docstatus")])
 
-	if filters.get("from_date"): conditions += " and start_date >= %(from_date)s"
-	if filters.get("to_date"): conditions += " and end_date <= %(to_date)s"
-	if filters.get("company"): conditions += " and company = %(company)s"
-	if filters.get("employee"): conditions += " and employee = %(employee)s"
+	if filters.get("from_date"): conditions += " and ss.start_date >= %(from_date)s"
+	if filters.get("to_date"): conditions += " and ss.end_date <= %(to_date)s"
+	if filters.get("company"): conditions += " and ss.company = %(company)s"
+	if filters.get("employee"): conditions += " and ss.employee = %(employee)s"
 
 	return conditions, filters
 
